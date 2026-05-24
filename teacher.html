@@ -550,11 +550,10 @@ function initMap() {
       });
 
       // 오류 감지 — 사용자에게 명확한 메시지 표시
-      wmsLayers[lyr.id].on('tileerror', function(e) {
+      wmsLayers[lyr.id].on('tileerror', function() {
         if (!this._errShown) {
           this._errShown = true;
-          showToast('⚠️ ' + lyr.label + ' 레이어 오류: 생활안전지도 API 응답 없음', 'danger');
-          console.error('[SafemapWMS] tileerror', lyr.id, e);
+          showToast('⚠️ ' + lyr.label + ' WMS 타일 오류 — CORS 차단일 수 있습니다.\n위험지점을 직접 탭해서 레드존을 추가하세요.', 'warn');
         }
       }.bind(wmsLayers[lyr.id]));
     });
@@ -605,6 +604,12 @@ function toggleSafetyLayer(id, color, btn) {
     btn.classList.remove('on');
     btn.style.background = '';
     btn.style.color = '';
+    // 클릭 레드존 모드 해제
+    if (window._clickRedzoneLayer === id) {
+      window._clickRedzoneLayer = null;
+      map.off('click');
+      map.on('click', onMapClick);
+    }
     showToast(lyr.label + ' 레이어 OFF');
   } else {
     wmsLayers[id]._errShown = false;
@@ -613,7 +618,7 @@ function toggleSafetyLayer(id, color, btn) {
     btn.classList.add('on');
     btn.style.background = color;
     btn.style.color = (color === '#ffd93d') ? '#111' : '#fff';
-    showToast(lyr.label + ' ON — 위험지점 레드존 자동 조회 중...');
+    showToast(lyr.label + ' ON');
     autoAddRedzoneFromLayer(id);
   }
 }
@@ -624,88 +629,116 @@ function toggleSafetyLayer(id, color, btn) {
 async function autoAddRedzoneFromLayer(layerId) {
   if (!['crime','fall'].includes(layerId)) return;
   const lyr = SAFETY_LAYERS.find(l => l.id === layerId);
-  const center = map.getCenter();
-  const delta = 0.015;
+  const colorMap  = { crime:'#f85149', fall:'#ffd93d' };
   const radiusMap = { crime: 80, fall: 30 };
-  const colorMap  = { crime: '#f85149', fall: '#ffd93d' };
-  const radius = radiusMap[layerId] || 40;
-  const color  = colorMap[layerId] || '#f85149';
 
-  // safemap WFS GetFeature로 현재 영역 내 실제 위험지점 조회
-  const bbox = `${center.lng-delta},${center.lat-delta},${center.lng+delta},${center.lat+delta}`;
-  const wfsUrl = 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_DATA'
+  // 생활안전지도 Data API (REST 방식)
+  // 범죄: http://safemap.go.kr/openapi2/IF_0086?serviceKey=...&pageNo=1&numOfRows=20&returnType=json
+  // 낙상: http://safemap.go.kr/openapi2/IF_0165?serviceKey=...&pageNo=1&numOfRows=20&returnType=json
+  const center = map.getCenter();
+  const apiUrl = 'https://www.safemap.go.kr/openapi2/' + lyr.intId
     + '?serviceKey=' + SAFEMAP_KEY
-    + '&SERVICE=WFS&VERSION=1.0.0&REQUEST=GetFeature'
-    + '&TYPENAME=' + lyr.layer
-    + '&BBOX=' + bbox + '&SRSNAME=EPSG:4326'
-    + '&OUTPUTFORMAT=application%2Fjson&MAXFEATURES=20';
+    + '&pageNo=1&numOfRows=30&returnType=json';
+
+  showToast(lyr.label + ' 위험지점 조회 중...');
 
   try {
-    const res = await fetch(wfsUrl, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const json = await res.json();
-    const features = json.features || [];
-    if (!features.length) {
-      showToast(lyr.label + ' — 현재 화면 범위 내 데이터 없음', 'warn');
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 10000);
+    const res = await fetch(apiUrl, { signal: ctrl.signal });
+    clearTimeout(timer);
+    const text = await res.text();
+
+    // HTML이 반환되면 CORS 차단 or 인증 오류
+    if (text.trim().startsWith('<')) {
+      throw new Error('API가 HTML을 반환함 — CORS 차단 또는 인증키 오류');
+    }
+
+    const json = JSON.parse(text);
+    // 응답 구조: {response:{body:{items:[{lat, lng, ...}]}}} 또는 {items:[...]}
+    const items = json?.response?.body?.items?.item
+      || json?.response?.body?.items
+      || json?.items?.item
+      || json?.items
+      || [];
+
+    if (!items.length) {
+      showToast(lyr.label + ' — 전국 데이터에서 조회됨. 현재 지도 범위로 필터링 중...');
       return;
     }
+
+    // 현재 지도 경계
+    const bounds = map.getBounds();
+    const color  = colorMap[layerId];
+    const radius = radiusMap[layerId];
     let added = 0;
-    features.forEach(f => {
-      const g = f.geometry;
-      if (!g) return;
-      let lat, lng;
-      if (g.type === 'Point') { [lng, lat] = g.coordinates; }
-      else if (g.type === 'MultiPoint') { [lng, lat] = g.coordinates[0]; }
-      else return;
+
+    (Array.isArray(items) ? items : [items]).forEach(item => {
+      // 좌표 필드명 다양: lat/lng, latitude/longitude, la/lo, y/x
+      const lat = parseFloat(item.lat || item.latitude || item.la || item.y || item.crdnt_y || 0);
+      const lng = parseFloat(item.lng || item.longitude || item.lo || item.x || item.crdnt_x || 0);
+      if (!lat || !lng) return;
+      if (!bounds.contains([lat, lng])) return; // 현재 화면 밖 제외
       const dup = redzones.some(r => Math.hypot((r.lat-lat)*111000,(r.lng-lng)*111000) < radius*2);
-      if (!dup) { addRedzoneCircle(lat, lng, lyr.label + ' 위험지점', layerId, color, radius, true); added++; }
-    });
-    showToast(added > 0
-      ? '✅ ' + lyr.label + ' 레드존 ' + added + '개 자동 추가'
-      : lyr.label + ' — 신규 지점 없음');
-  } catch(e) {
-    // WFS 미지원 → WMS GetFeatureInfo 폴백 (현재 지도 중심 기준)
-    console.warn('[autoRedzone WFS 실패]', e.message);
-    try {
-      const sz = map.getSize();
-      const bounds = map.getBounds();
-      const sw = map.options.crs.project(bounds.getSouthWest());
-      const ne = map.options.crs.project(bounds.getNorthEast());
-      const cp = map.latLngToContainerPoint(center);
-      const fiUrl = 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS'
-        + '?serviceKey=' + SAFEMAP_KEY
-        + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo'
-        + '&LAYERS=' + lyr.layer + '&QUERY_LAYERS=' + lyr.layer
-        + '&INFO_FORMAT=application%2Fjson&FEATURE_COUNT=10'
-        + '&SRS=EPSG%3A3857'
-        + '&BBOX=' + sw.x+','+sw.y+','+ne.x+','+ne.y
-        + '&WIDTH=' + sz.x + '&HEIGHT=' + sz.y
-        + '&X=' + Math.round(cp.x) + '&Y=' + Math.round(cp.y);
-      const r2 = await fetch(fiUrl, { signal: AbortSignal.timeout(6000) });
-      const j2 = await r2.json();
-      if (j2.features?.length) {
-        j2.features.forEach(f => {
-          const g = f.geometry;
-          if (!g) return;
-          let lat, lng;
-          if (g.type === 'Point') [lng,lat] = g.coordinates;
-          else return;
-          addRedzoneCircle(lat, lng, lyr.label, layerId, color, radius, true);
-        });
-        showToast('✅ ' + lyr.label + ' GetFeatureInfo 레드존 추가');
-      } else {
-        showToast(lyr.label + ' 위험 데이터 없음 (현재 위치)');
+      if (!dup) {
+        addRedzoneCircle(lat, lng, lyr.label + ' 위험지점', layerId, color, radius, true);
+        added++;
       }
-    } catch(e2) {
-      showToast('⚠️ ' + lyr.label + ' 데이터 조회 실패: ' + e2.message, 'danger');
-      console.error('[autoRedzone GetFeatureInfo 실패]', e2);
+    });
+
+    if (added > 0) {
+      showToast('✅ ' + lyr.label + ' 레드존 ' + added + '개 자동 추가');
+    } else {
+      showToast(lyr.label + ' — 현재 화면 범위 내 위험지점 없음 (지도를 이동 후 다시 클릭)');
     }
+  } catch(e) {
+    console.error('[autoRedzone]', e);
+    // CORS 차단 시 → 안내 메시지 (레드존 수동 추가 유도)
+    showToast('⚠️ ' + lyr.label + ' 자동 조회 실패: ' + e.message
+      + ' — "🔴 레드존 추가" 버튼으로 수동 설정하세요', 'danger');
   }
 }
 
-// ════════════════════════════════════════════════
-// Vworld 장소 검색
-// ════════════════════════════════════════════════
+
+
+// 클릭으로 레드존 추가 모드 활성화
+function enableClickRedzone(layerId, color, radius, label) {
+  // 이미 해당 레이어 클릭 모드가 활성화되어 있으면 스킵
+  if (window._clickRedzoneLayer === layerId) return;
+  window._clickRedzoneLayer = layerId;
+
+  showToast(
+    label + ' 레이어 ON\n' +
+    '⚠️ API 직접 호출 불가 (CORS)\n' +
+    '🗺️ WMS 레이어는 지도에 색상으로 표시됩니다.\n' +
+    '위험지점을 탭하면 레드존이 자동 추가됩니다!',
+    'warn'
+  );
+
+  // 기존 클릭 핸들러 제거 후 레드존 클릭 모드 등록
+  map.off('click', onMapClick);
+  map.on('click', function redzoneClickHandler(e) {
+    if (window._clickRedzoneLayer !== layerId) {
+      map.off('click', redzoneClickHandler);
+      map.on('click', onMapClick);
+      return;
+    }
+    addRedzoneCircle(e.latlng.lat, e.latlng.lng,
+      label + ' 위험지점', layerId, color, radius, true);
+    showToast('🔴 ' + label + ' 레드존 추가! 계속 탭하거나 다른 버튼을 누르세요.');
+  });
+
+  // 다른 조작(구역그리기, 레드존추가 버튼) 시 클릭 모드 해제
+  map.once('zoomstart movestart', () => {
+    if (window._clickRedzoneLayer === layerId) {
+      window._clickRedzoneLayer = null;
+      map.off('click');
+      map.on('click', onMapClick);
+    }
+  });
+}
+
+
 async function searchVworld() {
   const q = document.getElementById('placeInput').value.trim();
   if (!q) { showToast('검색어를 입력하세요'); return; }
