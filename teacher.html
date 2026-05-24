@@ -450,12 +450,19 @@ function safemapWmsUrl(intId) {
 }
 
 // 생활안전지도 WMS 레이어 정의 (공식 API 문서 기준)
+// 생활안전지도 WMS 레이어 정의
+// API URL: https://www.safemap.go.kr/openApi2/{intId}_WMS?serviceKey=KEY
 const SAFETY_LAYERS = [
-  { id:'crime',    intId:'IF_0086', layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All',  label:'🚨 범죄주의구간', color:'#f85149' },
-  { id:'fall',     intId:'IF_0165', layer:'A2SM_FLLNSPOT',       style:'A2SM_FllnSpot',             label:'⚠️ 추락낙상사고', color:'#ffd93d' },
-  { id:'drown',    intId:'IF_0157', layer:'A2SM_FDIVNSPOT',      style:'A2SM_FdivnSpot',            label:'🌊 익사사고지점', color:'#4fc3f7' },
-  { id:'traffic',  intId:'IF_0179', layer:'A2SM_TRFCACDNT',      style:'A2SM_TrfcAcdnt',            label:'🚗 교통사고다발', color:'#ff9800' },
-  { id:'hospital', intId:'IF_0169', layer:'A2SM_EMGHSPTAL',      style:'A2SM_EmgHsptal',            label:'🏥 응급의료기관', color:'#3fb950' },
+  { id:'crime',    intId:'IF_0086', layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All',
+    label:'🚨 범죄주의구간', color:'#f85149', desc:'5대범죄 위험구간' },
+  { id:'fall',     intId:'IF_0165', layer:'A2SM_FLLNSPOT',       style:'A2SM_FllnSpot',
+    label:'⚠️ 추락낙상사고', color:'#ffd93d', desc:'추락·낙상 사고지점' },
+  { id:'drown',    intId:'IF_0157', layer:'A2SM_FDIVNSPOT',      style:'A2SM_FdivnSpot',
+    label:'🌊 익사사고지점', color:'#4fc3f7', desc:'익사 사고 지점' },
+  { id:'traffic',  intId:'IF_0179', layer:'A2SM_TRFCACDNT',      style:'A2SM_TrfcAcdnt',
+    label:'🚗 교통사고다발', color:'#ff9800', desc:'교통사고 다발 구간' },
+  { id:'hospital', intId:'IF_0169', layer:'A2SM_EMGHSPTAL',      style:'A2SM_EmgHsptal',
+    label:'🏥 응급의료기관', color:'#3fb950', desc:'응급의료기관 위치' },
 ];
 
 const SCHOOL_RULES = `[각화중학교 2026 현장체험학습 규정]
@@ -553,30 +560,24 @@ function initMap() {
       crossOrigin: 'anonymous', errorTileUrl: ''
     });
 
-    let vwOkCount = 0;
+    // Vworld 타일 로드 성공 시 안내 (OSM은 항상 유지)
     vwBase.on('tileload', () => {
-      vwOkCount++;
-      if (vwOkCount === 5) {
-        // Vworld 성공 시 OSM 제거 (깔끔하게)
-        if (map.hasLayer(osm)) { map.removeLayer(osm); }
-        showToast('Vworld 지도 로드 완료 ✓');
-      }
+      if (!window._vwOkShown) { window._vwOkShown = true; showToast('Vworld 지도 로드 완료 ✓'); }
     });
     vwBase.on('tileerror', () => {
-      // 실패해도 OSM이 보임 → 안내만
-      if (vwOkCount === 0 && !window._vwErrShown) {
+      if (!window._vwErrShown) {
         window._vwErrShown = true;
         if (!getProxy()) showProxySetupBanner();
         else showVworldDomainBanner();
       }
     });
-    vwBase.addTo(map);
-
+    // Vworld는 레이어 컨트롤에서만 선택 — OSM이 항상 기본
+    // (vwBase를 자동 추가하면 일부 타일 실패 시 검은 칸 발생)
     L.control.layers({
-      'OpenStreetMap': osm,
-      'Vworld 기본지도': vwBase,
-      'Vworld 위성': vwSat,
-    }).addTo(map);
+      'OpenStreetMap (기본)': osm,
+      'Vworld 기본지도 ★': vwBase,
+      'Vworld 위성 ★': vwSat,
+    }, {}, { position: 'topright' }).addTo(map);
 
     // ── 생활안전지도 WMS 레이어 생성
     // safemap WMS는 파라미터 대소문자 민감 → L.TileLayer 직접 서브클래스로 구현
@@ -662,27 +663,60 @@ function showMapError(msg) {
 // 생활안전지도 레이어 토글
 function toggleSafetyLayer(id, color, btn) {
   if (!mapReady) { showToast('먼저 지도 탭을 열어주세요'); return; }
+  const lyrInfo = SAFETY_LAYERS.find(l => l.id === id);
   if (activeLayers.has(id)) {
     map.removeLayer(wmsLayers[id]);
     activeLayers.delete(id);
     btn.classList.remove('on');
     btn.style.background = '';
     btn.style.color = '';
-    showToast(SAFETY_LAYERS.find(l=>l.id===id).label + ' 레이어 OFF');
+    showToast(lyrInfo.label + ' OFF');
   } else {
-    if (!getProxy()) {
-      showToast('⚠️ 생활안전지도 레이어는 Cloudflare Worker 프록시 필요', 'warn');
-      showProxySetupBanner();
-      return;
-    }
+    // 프록시 없어도 일단 추가 시도 (직접 CORS 차단이면 tileerror에서 처리)
     wmsLayers[id].addTo(map);
     activeLayers.add(id);
     btn.classList.add('on');
     btn.style.background = color;
-    btn.style.color = ['#ffd93d'].includes(color) ? '#111' : '#fff';
-    showToast(SAFETY_LAYERS.find(l=>l.id===id).label + ' 레이어 ON — 지도에 표시 중...');
-    autoAddRedzoneFromLayer(id);
+    btn.style.color = color === '#ffd93d' ? '#111' : '#fff';
+    showToast(lyrInfo.label + ' ON — ' + lyrInfo.desc);
+    // 레이어 활성화 후 현재 지도 범위에서 자동 레드존 생성
+    setTimeout(() => autoRedzoneFromActiveLayer(id, lyrInfo), 1500);
   }
+}
+
+// 활성화된 레이어 기반 자동 레드존 — WMS GetFeatureInfo 대신
+// 현재 지도 중심 주변의 위험지점을 safemap Data API로 조회
+async function autoRedzoneFromActiveLayer(id, lyrInfo) {
+  if (!getProxy()) return; // 프록시 없으면 Data API도 CORS 차단
+  const center = map.getCenter();
+  const p = getProxy();
+  // safemap Data API (JSON 포인트 데이터)
+  // IF_0086 → 범죄, IF_0165 → 낙상, IF_0157 → 익사
+  const dataApiMap = {
+    crime:  { url: p + '/safemap-data/IF_0086', color: '#f85149', radius: 100 },
+    fall:   { url: p + '/safemap-data/IF_0165', color: '#ffd93d', radius: 50  },
+    drown:  { url: p + '/safemap-data/IF_0157', color: '#4fc3f7', radius: 60  },
+  };
+  const cfg = dataApiMap[id];
+  if (!cfg) return;
+  try {
+    const res = await fetch(
+      cfg.url + '?key=' + SAFEMAP_KEY
+      + '&lat=' + center.lat + '&lng=' + center.lng + '&radius=2000'
+    );
+    const data = await res.json();
+    if (data.items?.length) {
+      let added = 0;
+      data.items.slice(0, 10).forEach(item => {
+        if (item.lat && item.lng) {
+          addRedzoneCircle(parseFloat(item.lat), parseFloat(item.lng),
+            lyrInfo.label + ' 위험지점', id, cfg.color, cfg.radius, true);
+          added++;
+        }
+      });
+      if (added > 0) showToast('🔴 ' + lyrInfo.label + ' 레드존 ' + added + '개 자동 추가됨!');
+    }
+  } catch(e) { /* Data API 실패 시 무시 */ }
 }
 
 // 생활안전지도 레이어 → 레드존 자동 생성 (현재 지도 중심 기준)
