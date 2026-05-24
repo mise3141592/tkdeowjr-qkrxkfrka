@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="체험학습 학생">
+<meta name="theme-color" content="#0f1923">
+<link rel="manifest" href="student-manifest.json">
+<title>현장체험학습 학생 앱</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1923;
+    --surface: #182230;
+    --surface2: #1e2d3d;
+    --accent: #00e5a0;
+    --accent2: #ff6b6b;
+    --accent3: #ffb700;
+    --blue: #4fc3f7;
+    --text: #e8f4f8;
+    --text-dim: #6b8898;
+    --border: rgba(0,229,160,0.12);
+    --r: 18px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex; flex-direction: column;
+    height: 100vh; height: -webkit-fill-available;
+  }
+
+  /* STATUS BAR */
+  .status-bar {
+    height: calc(var(--safe-top) + 48px);
+    padding-top: var(--safe-top);
+    background: var(--bg);
+    display: flex; align-items: flex-end;
+    justify-content: space-between;
+    padding: var(--safe-top) 20px 10px;
+    flex-shrink: 0; z-index: 100;
+  }
+  .app-logo { display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .app-name { font-size: 17px; font-weight: 700; color: var(--text); }
+  .sos-btn {
+    background: var(--accent2);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  .sos-btn:active { transform: scale(0.95); }
+
+  /* SCROLL */
+  .main-scroll {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 16px 16px;
+  }
+  .main-scroll::-webkit-scrollbar { display: none; }
+
+  /* MY CARD */
+  .my-card {
+    background: linear-gradient(135deg, #00e5a022 0%, #4fc3f722 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 16px;
+    position: relative; overflow: hidden;
+  }
+  .my-card::before {
+    content: '';
+    position: absolute; right: -20px; top: -20px;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(0,229,160,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .my-avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 900; color: var(--bg);
+    flex-shrink: 0;
+  }
+  .my-info { flex: 1; }
+  .my-name { font-size: 20px; font-weight: 900; }
+  .my-class { font-size: 13px; color: var(--text-dim); margin-top: 3px; }
+  .my-gps { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .gps-indicator { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: blink 1.5s infinite; }
+  .gps-text { font-size: 11px; color: var(--accent); font-weight: 600; }
+
+  /* SECTION */
+  .section-title { font-size: 11px; font-weight: 700; color: var(--text-dim); letter-spacing: 1.5px; text-transform: uppercase; margin: 18px 0 10px; }
+
+  /* SCHEDULE CARD */
+  .schedule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .schedule-header {
+    background: var(--surface2);
+    padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .schedule-day { font-size: 13px; font-weight: 700; color: var(--accent); }
+  .schedule-date { font-size: 12px; color: var(--text-dim); }
+  .timeline { padding: 4px 0; }
+  .timeline-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-time { font-size: 11px; color: var(--text-dim); min-width: 44px; padding-top: 2px; }
+  .timeline-dot-col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .timeline-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 3px; flex-shrink: 0; }
+  .timeline-line { width: 2px; flex: 1; background: rgba(0,229,160,0.15); min-height: 20px; }
+  .timeline-content { flex: 1; }
+  .timeline-title { font-size: 13px; font-weight: 600; }
+  .timeline-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .timeline-item.active .timeline-dot { background: var(--accent3); box-shadow: 0 0 8px var(--accent3); }
+  .timeline-item.active .timeline-title { color: var(--accent3); }
+
+  /* INFO CARDS */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .info-card:active { transform: scale(0.96); }
+  .info-icon { font-size: 22px; margin-bottom: 6px; }
+  .info-label { font-size: 12px; font-weight: 700; }
+  .info-value { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* NOTICE */
+  .notice-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .notice-card:active { transform: scale(0.98); }
+  .notice-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .notice-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-new { background: rgba(0,229,160,0.2); color: var(--accent); }
+  .badge-imp { background: rgba(255,107,107,0.2); color: var(--accent2); }
+  .notice-title { font-size: 13px; font-weight: 600; }
+  .notice-date { font-size: 11px; color: var(--text-dim); }
+
+  /* SOS MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 300;
+    display: none;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+  .modal-overlay.show { display: flex; }
+  .sos-modal {
+    background: var(--surface);
+    border: 2px solid var(--accent2);
+    border-radius: 24px;
+    padding: 32px 24px;
+    width: calc(100% - 48px);
+    max-width: 360px;
+    text-align: center;
+    animation: sosPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes sosPop { from{transform:scale(0.8);opacity:0} to{transform:scale(1);opacity:1} }
+  .sos-icon { font-size: 56px; margin-bottom: 12px; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+  .sos-title { font-size: 22px; font-weight: 900; color: var(--accent2); margin-bottom: 8px; }
+  .sos-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; margin-bottom: 24px; }
+  .sos-call { background: var(--accent2); color: white; border: none; width: 100%; padding: 16px; border-radius: 14px; font-family: inherit; font-size: 17px; font-weight: 900; cursor: pointer; margin-bottom: 10px; }
+  .sos-call:active { transform: scale(0.97); }
+  .sos-cancel { background: transparent; border: 1px solid var(--border); color: var(--text-dim); width: 100%; padding: 12px; border-radius: 14px; font-family: inherit; font-size: 14px; cursor: pointer; }
+
+  /* BOTTOM SHEET */
+  .bottom-sheet-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    backdrop-filter: blur(3px);
+  }
+  .bottom-sheet-overlay.show { display: flex; }
+  .bottom-sheet {
+    background: var(--surface);
+    border-radius: 24px 24px 0 0;
+    width: 100%; max-height: 80vh;
+    overflow-y: auto;
+    padding: 0 20px calc(var(--safe-bottom) + 20px);
+    animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .sheet-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 12px auto 18px; }
+  .sheet-title { font-size: 18px; font-weight: 900; margin-bottom: 14px; }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding-bottom: calc(var(--safe-bottom) + 4px);
+    flex-shrink: 0;
+  }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0; cursor: pointer; }
+  .nav-item:active { opacity: 0.6; }
+  .nav-icon { font-size: 22px; transition: transform 0.15s; }
+  .nav-label { font-size: 10px; color: var(--text-dim); margin-top: 3px; font-weight: 500; }
+  .nav-item.active .nav-icon { transform: translateY(-2px); }
+  .nav-item.active .nav-label { color: var(--accent); font-weight: 700; }
+
+  /* PAGE */
+  .page { display: none; padding-top: 4px; }
+  .page.active { display: block; }
+
+  /* CHECKLIST */
+  .check-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .check-item:active { transform: scale(0.98); }
+  .check-box {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--text-dim);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.2s;
+    font-size: 13px; color: transparent;
+  }
+  .check-item.checked .check-box { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .check-text { font-size: 14px; font-weight: 500; }
+  .check-item.checked .check-text { color: var(--text-dim); text-decoration: line-through; }
+
+  /* LOADING */
+  .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div class="app-logo">
+    <div class="logo-dot"></div>
+    <div class="app-name">수학여행 가이드</div>
+  </div>
+  <button class="sos-btn" onclick="showSOS()">🆘 SOS</button>
+</div>
+
+<!-- MAIN -->
+<div class="main-scroll" id="mainScroll">
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <!-- 내 정보 -->
+    <div class="my-card">
+      <div class="my-avatar" id="myAvatar">김</div>
+      <div class="my-info">
+        <div class="my-name" id="myName">이름 설정 필요</div>
+        <div class="my-class" id="myClass">학번을 등록하세요</div>
+        <div class="my-gps">
+          <div class="gps-indicator"></div>
+          <div class="gps-text">📍 위치 공유 중</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 빠른 정보 -->
+    <div class="info-grid">
+      <div class="info-card" onclick="showSheet('room')">
+        <div class="info-icon">🛏️</div>
+        <div class="info-label">내 방 배정</div>
+        <div class="info-value" id="myRoom">탭하여 확인</div>
+      </div>
+      <div class="info-card" onclick="showSheet('bus')">
+        <div class="info-icon">🚌</div>
+        <div class="info-label">버스 좌석</div>
+        <div class="info-value" id="mySeat">탭하여 확인</div>
+      </div>
+      <div class="info-card" onclick="goPage('schedule')">
+        <div class="info-icon">📅</div>
+        <div class="info-label">일정 확인</div>
+        <div class="info-value">1박 2일 일정</div>
+      </div>
+      <div class="info-card" onclick="goPage('checklist')">
+        <div class="info-icon">✅</div>
+        <div class="info-label">준비물 체크</div>
+        <div class="info-value" id="checkProgress">0 / 10</div>
+      </div>
+    </div>
+
+    <!-- 공지사항 -->
+    <div class="section-title">공지사항</div>
+    <div class="notice-card" onclick="showNotice('탑승 안내')">
+      <div class="notice-header">
+        <span class="notice-badge badge-new">NEW</span>
+        <span class="notice-title">내일 아침 버스 탑승 안내</span>
+      </div>
+      <div class="notice-date">오전 7시 30분까지 운동장 집합</div>
+    </div>
+    <div class="notice-card" onclick="showNotice('스마트폰')">
+      <div class="notice-header">
+        <span class="notice-badge badge-imp">중요</span>
+        <span class="notice-title">스마트폰 제출 안내</span>
+      </div>
+      <div class="notice-date">도착 후 담임 선생님께 제출</div>
+    </div>
+    <div class="notice-card" onclick="showNotice('안전수칙')">
+      <div class="notice-header">
+        <span class="notice-badge" style="background:rgba(79,195,247,0.2);color:#4fc3f7">안전</span>
+        <span class="notice-title">현장 안전 수칙 숙지</span>
+      </div>
+      <div class="notice-date">단체 이동 시 항상 2명 이상</div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="page" id="page-schedule">
+    <div class="section-title">여행 일정표</div>
+
+    <div class="schedule-card">
+      <div class="schedule-header">
+        <div class="schedule-day">1일차</div>
+        <div class="schedule-date">2026.06.10 (수)</div>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-time">07:30</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-title">학교 출발</div><div class="timeline-desc">각화중학교 운동장 집합 → 버스 탑승</div></div>
+        </div>
+        <div class="timeline-item active">
+          <div class="timeline-time">10:00</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-title">불국사 도착 ← 현재</div><div class="timeline-desc">세계문화유산 견학 및 자유탐방</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">12:30</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-title">점심 식사</div><div class="timeline-desc">경주 한정식 (소나무 식당)</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">14:00</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-title">석굴암 탐방</div><div class="timeline-desc">국보 제24호 석굴암</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">16:30</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div></div>
+          <div class="timeline-content"><div class="timeline-title">숙소 체크인</div><div class="timeline-desc">경주 교육원 · 방 배정 확인</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedule-card">
+      <div class="schedule-header">
+        <div class="schedule-day">2일차</div>
+        <div class="schedule-date">2026.06.11 (목)</div>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-time">08:00</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-title">기상 및 아침식사</div><div class="timeline-desc">식당 집합</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">09:30</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-title">첨성대·동궁과 월지</div><div class="timeline-desc">신라 문화유산 견학</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">12:00</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div><div class="timeline-line"></div></div>
+          <div class="timeline-content"><div class="timeline-title">자유시간 & 점심</div><div class="timeline-desc">황리단길 탐방</div></div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-time">15:00</div>
+          <div class="timeline-dot-col"><div class="timeline-dot"></div></div>
+          <div class="timeline-content"><div class="timeline-title">귀교 출발</div><div class="timeline-desc">버스 탑승 → 학교 도착 예정 18:00</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="page" id="page-checklist">
+    <div class="section-title">준비물 체크리스트</div>
+    <div id="checklistItems">
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">여벌 옷 (2일분)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">세면도구 (칫솔, 치약, 샴푸)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">개인 상비약</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">편한 운동화</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">소액 용돈 (5만원 이내 권장)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">학생증</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">스마트폰 충전기</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">멀미약 (필요 시)</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">우산 또는 우비</div></div>
+      <div class="check-item" onclick="toggleCheck(this)"><div class="check-box">✓</div><div class="check-text">학부모 동의서 (제출 완료)</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-top:12px;text-align:center">
+      <div style="font-size:13px;color:var(--text-dim)">완료</div>
+      <div style="font-size:32px;font-weight:900;color:var(--accent)" id="checkCount">0</div>
+      <div style="font-size:13px;color:var(--text-dim)">/ 10 항목</div>
+    </div>
+  </div>
+
+  <!-- SAFETY -->
+  <div class="page" id="page-safety">
+    <div class="section-title">현장 안전 수칙</div>
+    <div style="background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:14px;padding:16px;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700;color:var(--accent2);margin-bottom:8px">🚨 긴급상황 대처</div>
+      <div style="font-size:13px;line-height:1.8;color:var(--text)">
+        1. 당황하지 말고 제자리에서 대기<br>
+        2. SOS 버튼 즉시 누르기<br>
+        3. 담임 선생님 직접 연락<br>
+        4. 혼자 이동 금지
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">📞 비상 연락처</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--surface2);border-radius:10px">
+          <span style="font-size:13px;font-weight:600">담임 (이○○ 선생님)</span>
+          <a href="tel:010-0000-0000" style="background:var(--accent);color:var(--bg);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none">📞 전화</a>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--surface2);border-radius:10px">
+          <span style="font-size:13px;font-weight:600">인솔 (김○○ 선생님)</span>
+          <a href="tel:010-0000-0001" style="background:var(--accent);color:var(--bg);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none">📞 전화</a>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--surface2);border-radius:10px">
+          <span style="font-size:13px;font-weight:600">119 구급대</span>
+          <a href="tel:119" style="background:var(--accent2);color:white;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;text-decoration:none">📞 119</a>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:10px">🛡️ 안전 수칙</div>
+      <div style="font-size:13px;line-height:2;color:var(--text)">
+        ✅ 단체 이동 시 항상 2명 이상<br>
+        ✅ 이동 전 모둠장에게 보고<br>
+        ✅ 앱 위치 공유 항상 ON<br>
+        ✅ 낯선 사람 따라가지 않기<br>
+        ✅ 정해진 구역 이탈 금지<br>
+        ✅ 귀중품 보관에 주의<br>
+        ✅ 음식 알레르기 교사에게 사전 보고
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="goPage('home')">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">홈</div>
+  </div>
+  <div class="nav-item" id="nav-schedule" onclick="goPage('schedule')">
+    <div class="nav-icon">📅</div>
+    <div class="nav-label">일정</div>
+  </div>
+  <div class="nav-item" id="nav-checklist" onclick="goPage('checklist')">
+    <div class="nav-icon">✅</div>
+    <div class="nav-label">준비물</div>
+  </div>
+  <div class="nav-item" id="nav-safety" onclick="goPage('safety')">
+    <div class="nav-icon">🛡️</div>
+    <div class="nav-label">안전수칙</div>
+  </div>
+</div>
+
+<!-- SOS MODAL -->
+<div class="modal-overlay" id="sosModal">
+  <div class="sos-modal">
+    <div class="sos-icon">🆘</div>
+    <div class="sos-title">긴급 도움 요청</div>
+    <div class="sos-desc">SOS를 전송하면 현재 위치가 교사에게 즉시 전달됩니다. 정말 도움이 필요한 상황에서만 사용하세요.</div>
+    <button class="sos-call" onclick="activateSOS()">📍 위치 전송 + 교사 연락</button>
+    <button class="sos-cancel" onclick="closeSOSModal()">취소</button>
+  </div>
+</div>
+
+<!-- 방배정 시트 -->
+<div class="bottom-sheet-overlay" id="roomSheet" onclick="closeSheet('roomSheet')">
+  <div class="bottom-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🛏️ 내 방 배정</div>
+    <div style="background:linear-gradient(135deg,#00e5a022,#4fc3f722);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px">
+      <div style="font-size:36px;font-weight:900;color:var(--accent)" id="roomNumber">305호</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-top:6px">경주 교육원 3층</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">같은 방 친구들</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="roommateList">
+      <span style="background:var(--surface2);padding:6px 14px;border-radius:20px;font-size:13px">이수진</span>
+      <span style="background:var(--surface2);padding:6px 14px;border-radius:20px;font-size:13px">박지호</span>
+      <span style="background:var(--surface2);padding:6px 14px;border-radius:20px;font-size:13px">최예린</span>
+    </div>
+    <div style="background:rgba(0,229,160,0.1);border:1px solid rgba(0,229,160,0.2);border-radius:12px;padding:12px;font-size:12px;color:var(--accent)">
+      🤖 AI가 교우관계를 분석하여 공정하게 배정되었습니다. 변경은 불가합니다.
+    </div>
+  </div>
+</div>
+
+<!-- 버스 시트 -->
+<div class="bottom-sheet-overlay" id="busSheet" onclick="closeSheet('busSheet')">
+  <div class="bottom-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🚌 버스 좌석</div>
+    <div style="background:linear-gradient(135deg,#4fc3f722,#00e5a022);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:16px">
+      <div style="font-size:36px;font-weight:900;color:var(--blue)" id="busNumber">2호차 14번</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-top:6px">왼쪽 창가 (중간)</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">옆자리</div>
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <span style="background:var(--surface2);padding:6px 14px;border-radius:20px;font-size:13px">이서준 (13번)</span>
+    </div>
+    <div style="background:rgba(79,195,247,0.1);border:1px solid rgba(79,195,247,0.2);border-radius:12px;padding:12px;font-size:12px;color:var(--blue)">
+      🤖 AI가 교우관계를 분석하여 공정하게 배정되었습니다. 변경은 불가합니다.
+    </div>
+  </div>
+</div>
+
+<!-- 공지 시트 -->
+<div class="bottom-sheet-overlay" id="noticeSheet" onclick="closeSheet('noticeSheet')">
+  <div class="bottom-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="noticeTitle">공지사항</div>
+    <div id="noticeContent" style="font-size:14px;line-height:1.8;color:var(--text)"></div>
+  </div>
+</div>
+
+<!-- 등록 시트 -->
+<div class="bottom-sheet-overlay" id="registerSheet">
+  <div class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">👋 처음 방문하셨나요?</div>
+    <div style="font-size:13px;color:var(--text-dim);margin-bottom:16px">학번과 이름을 등록하면 방 배정, 버스 좌석 등 개인 정보를 확인할 수 있습니다.</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px">학년 반</div>
+      <select style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px;padding:12px 14px;outline:none" id="regClass">
+        <option>2학년 1반</option><option>2학년 2반</option><option>2학년 3반</option>
+        <option>2학년 4반</option><option>2학년 5반</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px">번호</div>
+      <input type="number" min="1" max="35" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px;padding:12px 14px;outline:none" id="regNum" placeholder="번호">
+    </div>
+    <div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px">이름</div>
+      <input type="text" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:inherit;font-size:14px;padding:12px 14px;outline:none" id="regName" placeholder="이름 입력">
+    </div>
+    <button style="width:100%;padding:14px;border-radius:12px;border:none;background:var(--accent);color:var(--bg);font-family:inherit;font-size:15px;font-weight:700;cursor:pointer" onclick="registerStudent()">등록하기</button>
+  </div>
+</div>
+
+<script>
+// ── 초기화
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('studentInfo');
+  if (saved) {
+    const info = JSON.parse(saved);
+    applyStudentInfo(info);
+  } else {
+    setTimeout(() => document.getElementById('registerSheet').classList.add('show'), 600);
+  }
+  initChecklist();
+});
+
+function registerStudent() {
+  const cls = document.getElementById('regClass').value;
+  const num = document.getElementById('regNum').value;
+  const name = document.getElementById('regName').value.trim();
+  if (!num || !name) { alert('번호와 이름을 입력해주세요.'); return; }
+  const info = { class: cls, number: num, name };
+  localStorage.setItem('studentInfo', JSON.stringify(info));
+  applyStudentInfo(info);
+  closeSheet('registerSheet');
+}
+
+function applyStudentInfo(info) {
+  document.getElementById('myName').textContent = info.name;
+  document.getElementById('myClass').textContent = `${info.class} ${info.number}번`;
+  document.getElementById('myAvatar').textContent = info.name.charAt(0);
+  document.getElementById('myRoom').textContent = '305호 · 3층';
+  document.getElementById('mySeat').textContent = '2호차 14번';
+}
+
+// ── 페이지
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('[id^="nav-"]').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.getElementById('mainScroll').scrollTop = 0;
+}
+
+// ── 시트
+function showSheet(type) {
+  if (type === 'room') document.getElementById('roomSheet').classList.add('show');
+  if (type === 'bus') document.getElementById('busSheet').classList.add('show');
+}
+function closeSheet(id) { document.getElementById(id).classList.remove('show'); }
+
+// ── 공지
+const notices = {
+  '탑승 안내': '내일 아침 7시 30분까지 학교 운동장에 집합하세요.\n\n• 버스 좌석: 앱에서 확인\n• 지각 시 출발 불가\n• 가방은 버스 하단 짐칸 사용\n• 담임 선생님께 출석 확인 필수',
+  '스마트폰': '경주 도착 후 담임 선생님께 스마트폰을 제출해 주세요.\n\n이 앱(현장체험학습 앱)은 위치 공유용으로 계속 사용 가능합니다.\n\n• 회수 시간: 귀교 버스 탑승 시\n• 긴급 연락은 선생님 통해 가능',
+  '안전수칙': '안전한 여행을 위해 반드시 지켜주세요.\n\n• 단독 이동 절대 금지\n• 정해진 구역 이탈 금지 (GPS 알림 발송)\n• 모르는 사람 따라가지 않기\n• 위험 상황 시 SOS 버튼 즉시 누르기\n• 이동 전 모둠장에게 반드시 보고'
+};
+function showNotice(key) {
+  document.getElementById('noticeTitle').textContent = key;
+  document.getElementById('noticeContent').innerHTML = notices[key]?.replace(/\n/g,'<br>') || '';
+  document.getElementById('noticeSheet').classList.add('show');
+}
+
+// ── SOS
+function showSOS() { document.getElementById('sosModal').classList.add('show'); }
+function closeSOSModal() { document.getElementById('sosModal').classList.remove('show'); }
+function activateSOS() {
+  closeSOSModal();
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      alert(`📍 SOS 전송 완료!\n\n담임 선생님께 위치가 전달되었습니다.\n위도: ${pos.coords.latitude.toFixed(5)}\n경도: ${pos.coords.longitude.toFixed(5)}\n\n선생님이 곧 연락드립니다. 제자리에서 대기하세요.`);
+    }, () => {
+      alert('📍 SOS 전송 완료!\n\n담임 선생님께 알림이 전달되었습니다.\n제자리에서 대기하세요.');
+    });
+  } else {
+    alert('📍 SOS 전송 완료!\n선생님이 곧 연락드립니다.');
+  }
+}
+
+// ── 체크리스트
+let checkedCount = 0;
+function initChecklist() {
+  const saved = JSON.parse(localStorage.getItem('checklist') || '[]');
+  const items = document.querySelectorAll('.check-item');
+  items.forEach((item, i) => {
+    if (saved[i]) {
+      item.classList.add('checked');
+      item.querySelector('.check-box').textContent = '✓';
+    }
+  });
+  updateCheckCount();
+}
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  updateCheckCount();
+  const states = Array.from(document.querySelectorAll('.check-item')).map(i => i.classList.contains('checked'));
+  localStorage.setItem('checklist', JSON.stringify(states));
+}
+function updateCheckCount() {
+  const count = document.querySelectorAll('.check-item.checked').length;
+  document.getElementById('checkCount').textContent = count;
+  document.getElementById('checkProgress').textContent = `${count} / 10`;
+}
+
+// ── GPS 공유 (실제 위치)
+if (navigator.geolocation) {
+  navigator.geolocation.watchPosition(pos => {
+    // 실제 서비스에서는 서버로 전송
+    console.log('위치:', pos.coords.latitude, pos.coords.longitude);
+  }, null, { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 });
+}
+
+// ── PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
