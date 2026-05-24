@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0d1117">
 <link rel="manifest" href="teacher-manifest.json">
@@ -953,8 +954,6 @@ function addDrawPoint(lat, lng) {
     tempPolyline = L.polyline(drawPoints, {color:'#d29922', weight:2, dashArray:'5,5'}).addTo(map);
   }
   showToast(`점 ${drawPoints.length}개 추가 — 완료 후 "구역 저장" 버튼`);
-}
-
 }
 
 function toggleDraw() {
