@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -428,29 +431,25 @@ function safemapWmsBase(intId) {
 // 생활안전지도 WMS 레이어 정의 (공식 API 문서 기준)
 // 생활안전지도 WMS 레이어 정의
 // API URL: https://www.safemap.go.kr/openapi2/{intId}_WMS?serviceKey=KEY
-// ─ 생활안전지도 레이어 명세 ─────────────────────────────
-// objtId=205 범죄주의구간: IF_0086_WMS (신버전 openApi2)
-// objtId=173 추락낙상사고: openApiService/wms/getLayerData.do (구버전, apikey 방식)
-// WMS만 사용 (Data API 폐기됨)
+// ─ 생활안전지도 레이어 명세 (정확한 intId) ─────────────
+// objtId=205 범죄주의구간 전체: IF_0087_WMS, layer=A2SM_CRMNLHSPOT_TOT
+// objtId=173 추락낙상사고:     IF_0020_WMS, layer=A2SM_CRASHACDNTSTTUS
 const SAFETY_LAYERS = [
   {
-    id:    'crime',
-    // 신버전 URL: www.safemap.go.kr/openapi2/IF_0086_WMS?serviceKey=KEY
-    wmsUrl: 'https://www.safemap.go.kr/openapi2/IF_0086_WMS?serviceKey=' + SAFEMAP_KEY,
-    layer: 'A2SM_CRMNLHSPOT_TOT',
-    style: 'A2SM_CrmnlHspot_Tot_All',
-    label: '🚨 범죄주의구간',
-    color: '#f85149'
+    id:     'crime',
+    wmsUrl: 'https://www.safemap.go.kr/openapi2/IF_0087_WMS?serviceKey=' + SAFEMAP_KEY,
+    layer:  'A2SM_CRMNLHSPOT_TOT',
+    style:  'A2SM_CrmnlHspot_Tot_All',
+    label:  '🚨 범죄주의구간',
+    color:  '#f85149'
   },
   {
-    id:    'fall',
-    // 구버전 URL: www.safemap.go.kr/openApiService/wms/getLayerData.do?apikey=KEY
-    // objtId=173, layer=A2SM_CRASHACDNTSTTUS
-    wmsUrl: 'https://www.safemap.go.kr/openApiService/wms/getLayerData.do?apikey=' + SAFEMAP_KEY,
-    layer: 'A2SM_CRASHACDNTSTTUS',
-    style: 'A2SM_CrashAcdntSttus',
-    label: '⚠️ 추락낙상사고',
-    color: '#ffd93d'
+    id:     'fall',
+    wmsUrl: 'https://www.safemap.go.kr/openapi2/IF_0020_WMS?serviceKey=' + SAFEMAP_KEY,
+    layer:  'A2SM_CRASHACDNTSTTUS',
+    style:  'A2SM_CrashAcdntSttus',
+    label:  '⚠️ 추락낙상사고',
+    color:  '#ffd93d'
   },
 ];
 
@@ -1278,6 +1277,29 @@ function showToast(msg,type='info'){
 // ════════════════════════════════════════════════
 // 초기화
 // ════════════════════════════════════════════════
+// onclick에서 호출하는 함수들을 window에 명시 등록 (캐시 문제 대비)
+window.goPage=function(n){goPage(n);};
+window.showM=function(n){showM(n);};
+window.closeM=function(n){closeM(n);};
+window.toggleDraw=function(){toggleDraw();};
+window.toggleRZMode=function(){toggleRZMode();};
+window.searchVworld=function(){searchVworld();};
+window.saveDrawnZone=function(){saveDrawnZone();};
+window.clearAllZones=function(){clearAllZones();};
+window.addStudentManual=function(){addStudentManual();};
+window.refreshDB=function(){refreshDB();};
+window.exportCSV=function(){exportCSV();};
+window.sendChat=function(){sendChat();};
+window.qs=function(t){qs(t);};
+window.runRoute=function(){runRoute();};
+window.confirmEmerg=function(){confirmEmerg();};
+window.force119=function(){force119();};
+window.resolveAlert=function(id){resolveAlert(id);};
+window.removeStudent=function(id){removeStudent(id);};
+window.selectSearchResult=function(i){selectSearchResult(i);};
+window.toggleSafetyLayer=function(id,color,btn){toggleSafetyLayer(id,color,btn);};
+window.shareStudentApp=function(){shareStudentApp();};
+
 document.addEventListener('DOMContentLoaded',()=>{
   const now=new Date();
   const days=['일','월','화','수','목','금','토'];
