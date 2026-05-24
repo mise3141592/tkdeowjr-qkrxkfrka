@@ -421,12 +421,12 @@ function vworldSearchUrl(query) {
 
 // 생활안전지도 WMS base URL
 function safemapWmsBase(intId) {
-  return 'https://www.safemap.go.kr/openApi2/' + intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
+  return 'https://www.safemap.go.kr/openapi2/' + intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
 }
 
 // 생활안전지도 WMS 레이어 정의 (공식 API 문서 기준)
 // 생활안전지도 WMS 레이어 정의
-// API URL: https://www.safemap.go.kr/openApi2/{intId}_WMS?serviceKey=KEY
+// API URL: https://www.safemap.go.kr/openapi2/{intId}_WMS?serviceKey=KEY
 const SAFETY_LAYERS = [
   { id:'crime', intId:'IF_0086', layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All',
     label:'🚨 범죄주의구간', color:'#f85149' },
@@ -529,7 +529,7 @@ function initMap() {
           const ne = map.options.crs.project(tileBounds.getNorthEast());
           const bbox = sw.x + ',' + sw.y + ',' + ne.x + ',' + ne.y;
           const sz = this.getTileSize();
-          return 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS'
+          return 'https://www.safemap.go.kr/openapi2/' + lyr.intId + '_WMS'
             + '?serviceKey=' + SAFEMAP_KEY
             + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap'
             + '&LAYERS=' + lyr.layer
@@ -938,10 +938,6 @@ function onMapClick(e) {
     return;
   }
   // 활성 안전지도 레이어가 있을 때 클릭 → GetFeatureInfo로 위험지점 확인
-  if (activeLayers.size > 0 && !drawMode) {
-    checkSafemapFeatureInfo(e.latlng, e.containerPoint);
-    return;
-  }
   if (!drawMode) return;
   addDrawPoint(e.latlng.lat, e.latlng.lng);
 }
@@ -959,40 +955,6 @@ function addDrawPoint(lat, lng) {
   showToast(`점 ${drawPoints.length}개 추가 — 완료 후 "구역 저장" 버튼`);
 }
 
-// SafeMap WMS GetFeatureInfo → 위험지점 레드존 자동 추가
-async function checkSafemapFeatureInfo(latlng, containerPoint) {
-  for (const id of activeLayers) {
-    const lyrInfo = SAFETY_LAYERS.find(l => l.id === id);
-    if (!['drown','fall','crime'].includes(id)) continue;
-
-    const size = map.getSize();
-    const bounds = map.getBounds();
-    const minX = bounds.getWest(), minY = bounds.getSouth();
-    const maxX = bounds.getEast(), maxY = bounds.getNorth();
-
-    const url = `https://www.safemap.go.kr/openApi2/${lyrInfo.intId}_WMS?serviceKey=${SAFEMAP_KEY}`
-      + `&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo`
-      + `&LAYERS=${lyrInfo.layer}&STYLES=${lyrInfo.style}`
-      + `&FORMAT=image/png&TRANSPARENT=true&SRS=EPSG:4326`
-      + `&BBOX=${minX},${minY},${maxX},${maxY}`
-      + `&WIDTH=${size.x}&HEIGHT=${size.y}`
-      + `&QUERY_LAYERS=${lyrInfo.layer}&INFO_FORMAT=application/json`
-      + `&X=${Math.round(containerPoint.x)}&Y=${Math.round(containerPoint.y)}`;
-
-    try {
-      const res = await fetch(url, { mode: 'cors' });
-      if (!res.ok) continue;
-      const text = await res.text();
-      if (text.includes('"features"') && !text.includes('"features":[]')) {
-        // 위험지점 확인 → 레드존 자동 추가
-        const colors = { drown:'#4fc3f7', fall:'#ffd93d', crime:'#f85149' };
-        addRedzoneCircle(latlng.lat, latlng.lng, lyrInfo.label, id, colors[id]||'#f85149', 50, true);
-        showToast(`✅ ${lyrInfo.label} 위험지점 → 레드존 자동 추가!`);
-        return;
-      }
-    } catch(e) { /* 계속 */ }
-  }
-  // 위험지점 없음 → 그냥 마커만
 }
 
 function toggleDraw() {
