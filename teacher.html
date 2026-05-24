@@ -577,23 +577,33 @@ function initMap() {
       'Vworld 위성': vwSat,
     }).addTo(map);
 
-    // ── 생활안전지도 WMS 레이어 생성 (프록시 or 직접)
+    // ── 생활안전지도 WMS 레이어 생성
+    // Worker 프록시 있으면 경유, 없으면 직접 URL (serviceKey 포함)
     SAFETY_LAYERS.forEach(lyr => {
-      const base = safemapWmsUrl(lyr.intId);
-      // key 파라미터: 프록시가 있으면 Worker가 주입, 없으면 직접 URL에 포함됨
-      const extraParams = getProxy()
-        ? { key: SAFEMAP_KEY }
-        : { serviceKey: SAFEMAP_KEY };
-      wmsLayers[lyr.id] = L.tileLayer.wms(base, {
+      const p = getProxy();
+      // 프록시 경유: /safemap/{intId}?key=...&layers=...&styles=...
+      // 직접 호출: safemap.go.kr URL (CORS 허용 여부에 따라 작동)
+      const baseUrl = p
+        ? p + '/safemap/' + lyr.intId + '?key=' + SAFEMAP_KEY
+        : 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
+
+      wmsLayers[lyr.id] = L.tileLayer.wms(baseUrl, {
         layers:      lyr.layer,
         styles:      lyr.style,
         format:      'image/png',
         transparent: true,
         version:     '1.1.1',
         srs:         'EPSG:3857',
-        crossOrigin: '',
+        crossOrigin: 'anonymous',
         attribution: '© 생활안전지도(행정안전부)',
-        ...extraParams
+      });
+
+      // 타일 오류 감지 → 안내
+      wmsLayers[lyr.id].on('tileerror', () => {
+        if (!p && !wmsLayers[lyr.id]._errShown) {
+          wmsLayers[lyr.id]._errShown = true;
+          showToast('생활안전지도 레이어는 프록시(Worker) 설정 후 사용 가능합니다', 'warn');
+        }
       });
     });
 
@@ -644,13 +654,17 @@ function toggleSafetyLayer(id, color, btn) {
     btn.style.color = '';
     showToast(SAFETY_LAYERS.find(l=>l.id===id).label + ' 레이어 OFF');
   } else {
+    if (!getProxy()) {
+      showToast('⚠️ 생활안전지도 레이어는 Cloudflare Worker 프록시 필요', 'warn');
+      showProxySetupBanner();
+      return;
+    }
     wmsLayers[id].addTo(map);
     activeLayers.add(id);
     btn.classList.add('on');
     btn.style.background = color;
     btn.style.color = ['#ffd93d'].includes(color) ? '#111' : '#fff';
-    showToast(SAFETY_LAYERS.find(l=>l.id===id).label + ' 레이어 ON');
-    // 해당 레이어의 위험 지점을 레드존으로 자동 추가 (지도 현재 영역 기반)
+    showToast(SAFETY_LAYERS.find(l=>l.id===id).label + ' 레이어 ON — 지도에 표시 중...');
     autoAddRedzoneFromLayer(id);
   }
 }
@@ -796,30 +810,65 @@ async function selectSearchResult(idx) {
   await autoMarkRedzoneNear(item.lat, item.lng, item.name);
 }
 
-// Vworld 데이터 API로 장소 폴리곤 조회 (관광지 등)
+// OSM Overpass API로 장소 폴리곤 조회 (CORS 완전 허용, 키 불필요)
 async function fetchPlacePolygon(name, lat, lng) {
-  // Vworld 문화재/관광지 레이어에서 폴리곤 조회
-  // AT_TOUR: 관광지, CT_CULTURAL_HRTG: 문화재
-  const layers = ['AT_TOUR', 'POI_PARK', 'LP_PA_CBND_BUBUN'];
-  for (const dataId of layers) {
-    try {
-      const url = `https://api.vworld.kr/req/data?service=data&request=GetFeature&data=${dataId}&key=${VWORLD_KEY}&geometry=true&attribute=true&size=3&page=1&geomFilter=BOX(${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01})&crs=epsg:4326&format=json`;
-      const res = await fetch(url, { mode: 'cors' });
-      const json = await res.json();
-      const features = json.response?.result?.featureCollection?.features;
-      if (features?.length) {
-        const geom = features[0].geometry;
-        if (geom?.type === 'Polygon') {
-          // GeoJSON [lng,lat] → Leaflet [lat,lng]
-          return geom.coordinates[0].map(c => [c[1], c[0]]);
-        }
-        if (geom?.type === 'MultiPolygon') {
-          return geom.coordinates[0][0].map(c => [c[1], c[0]]);
-        }
-      }
-    } catch(e) { /* 계속 시도 */ }
+  // 검색 범위: 중심에서 500m 이내 관광명소/문화재/공원 폴리곤
+  const delta = 0.008; // 약 900m
+  const bbox = `${lat-delta},${lng-delta},${lat+delta},${lng+delta}`;
+
+  // 관광지/문화재/공원/역사명소 태그로 폴리곤 쿼리
+  const query = `[out:json][timeout:10];
+(
+  way["tourism"~"attraction|theme_park|zoo|aquarium|museum|artwork|viewpoint"](${bbox});
+  way["historic"~"monument|memorial|castle|ruins|temple|shrine"](${bbox});
+  way["leisure"~"park|nature_reserve|garden"](${bbox});
+  way["boundary"="protected_area"](${bbox});
+  relation["tourism"~"attraction|theme_park"](${bbox});
+  relation["historic"](${bbox});
+  relation["leisure"~"park|nature_reserve"](${bbox});
+);
+out geom;`;
+
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', {
+      method: 'POST',
+      body: query,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    const data = await res.json();
+    if (!data.elements?.length) return null;
+
+    // 검색 위치와 가장 가까운 요소 선택
+    let best = null, bestDist = Infinity;
+    for (const el of data.elements) {
+      let elLat, elLng;
+      if (el.type === 'way' && el.geometry?.length) {
+        elLat = el.geometry.reduce((s,p)=>s+p.lat,0)/el.geometry.length;
+        elLng = el.geometry.reduce((s,p)=>s+p.lon,0)/el.geometry.length;
+      } else if (el.type === 'relation' && el.members) {
+        const pts = el.members.flatMap(m => m.geometry||[]);
+        if (!pts.length) continue;
+        elLat = pts.reduce((s,p)=>s+p.lat,0)/pts.length;
+        elLng = pts.reduce((s,p)=>s+p.lon,0)/pts.length;
+      } else continue;
+      const d = Math.hypot(elLat-lat, elLng-lng);
+      if (d < bestDist) { bestDist = d; best = el; }
+    }
+    if (!best) return null;
+
+    // way → 폴리곤 좌표
+    if (best.type === 'way' && best.geometry?.length >= 3) {
+      return best.geometry.map(p => [p.lat, p.lon]);
+    }
+    // relation → 외곽선(outer) 첫 번째 멤버
+    if (best.type === 'relation') {
+      const outer = best.members?.find(m => m.role === 'outer' && m.geometry?.length >= 3);
+      if (outer) return outer.geometry.map(p => [p.lat, p.lon]);
+    }
+    return null;
+  } catch(e) {
+    return null;
   }
-  return null;
 }
 
 // 주변 위험지점 레드존 자동 표시
