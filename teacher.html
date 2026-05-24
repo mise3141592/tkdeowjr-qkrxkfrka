@@ -249,8 +249,6 @@ select.iif option{background:var(--bg)}
 <div class="pg" id="pg-map">
   <div class="sec">Vworld + 생활안전지도</div>
 
-  <!-- 프록시 상태 표시 -->
-  <div id="proxyStatusBar" style="border-radius:9px;padding:9px 12px;margin-bottom:10px;font-size:12px;display:flex;align-items:center;gap:8px"></div>
 
   <!-- Vworld 장소 검색 -->
   <div class="card" style="margin-bottom:10px">
@@ -414,38 +412,15 @@ const SAFEMAP_KEY = '6UV6B0TJ-6UV6-6UV6-6UV6-6UV6B0TJPT';
 const DB_KEY      = 'fieldtrip_students_v2';
 const ZONE_KEY    = 'fieldtrip_zones_v2';
 
-// ── 프록시 URL: localStorage에서 매번 최신값 읽기 (상수로 고정하지 않음)
-function getProxy() {
-  return (localStorage.getItem('proxy_url') || '').replace(/\/$/, '');
-}
-window.setProxy = (url) => {
-  localStorage.setItem('proxy_url', url.replace(/\/$/, ''));
-  location.reload();
-};
-
-// Vworld WMTS 타일 URL
-function vworldTileUrl(type) {
-  type = type || 'Base';
-  const p = getProxy();
-  // Leaflet TileLayer 표준: {z}/{x}/{y}
-  // Worker(/vworld-tile)에서 Vworld WMTS 형식({z}/{y}/{x})으로 변환
-  if (p) return p + '/vworld-tile/{z}/{x}/{y}?key=' + VWORLD_KEY + '&type=' + type;
-  const ext = type === 'Satellite' ? 'jpeg' : 'png';
-  // 직접 호출 시 Vworld WMTS는 {z}/{y}/{x} 순서
-  return 'https://api.vworld.kr/req/wmts/1.0.0/' + VWORLD_KEY + '/' + type + '/{z}/{y}/{x}.' + ext;
-}
-
 // Vworld 검색 URL
 function vworldSearchUrl(query) {
-  const p = getProxy();
-  if (p) return p + '/vworld-search?query=' + encodeURIComponent(query) + '&key=' + VWORLD_KEY;
-  return 'https://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=epsg:4326&size=10&page=1&query=' + encodeURIComponent(query) + '&type=place&format=json&errorformat=json&key=' + VWORLD_KEY;
+  return 'https://api.vworld.kr/req/search?service=search&request=search&version=2.0'
+    + '&crs=epsg:4326&size=10&page=1&type=place&format=json&errorformat=json'
+    + '&query=' + encodeURIComponent(query) + '&key=' + VWORLD_KEY;
 }
 
-// 생활안전지도 WMS URL  ← 경로 /safemap/{intId} 로 수정 (이전: /safemap-wms/{intId})
-function safemapWmsUrl(intId) {
-  const p = getProxy();
-  if (p) return p + '/safemap/' + intId;
+// 생활안전지도 WMS base URL
+function safemapWmsBase(intId) {
   return 'https://www.safemap.go.kr/openApi2/' + intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
 }
 
@@ -453,16 +428,10 @@ function safemapWmsUrl(intId) {
 // 생활안전지도 WMS 레이어 정의
 // API URL: https://www.safemap.go.kr/openApi2/{intId}_WMS?serviceKey=KEY
 const SAFETY_LAYERS = [
-  { id:'crime',    intId:'IF_0086', layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All',
-    label:'🚨 범죄주의구간', color:'#f85149', desc:'5대범죄 위험구간' },
-  { id:'fall',     intId:'IF_0165', layer:'A2SM_FLLNSPOT',       style:'A2SM_FllnSpot',
-    label:'⚠️ 추락낙상사고', color:'#ffd93d', desc:'추락·낙상 사고지점' },
-  { id:'drown',    intId:'IF_0157', layer:'A2SM_FDIVNSPOT',      style:'A2SM_FdivnSpot',
-    label:'🌊 익사사고지점', color:'#4fc3f7', desc:'익사 사고 지점' },
-  { id:'traffic',  intId:'IF_0179', layer:'A2SM_TRFCACDNT',      style:'A2SM_TrfcAcdnt',
-    label:'🚗 교통사고다발', color:'#ff9800', desc:'교통사고 다발 구간' },
-  { id:'hospital', intId:'IF_0169', layer:'A2SM_EMGHSPTAL',      style:'A2SM_EmgHsptal',
-    label:'🏥 응급의료기관', color:'#3fb950', desc:'응급의료기관 위치' },
+  { id:'crime', intId:'IF_0086', layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All',
+    label:'🚨 범죄주의구간', color:'#f85149' },
+  { id:'fall',  intId:'IF_0165', layer:'A2SM_FLLNSPOT',       style:'A2SM_FllnSpot',
+    label:'⚠️ 추락낙상사고', color:'#ffd93d' },
 ];
 
 const SCHOOL_RULES = `[각화중학교 2026 현장체험학습 규정]
@@ -545,83 +514,49 @@ function initMap() {
       zoomControl: true, attributionControl: true, preferCanvas: false
     });
 
-    // ── 기본 타일: OSM (항상 작동)
-    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19, attribution: '© OpenStreetMap'
+    // ── OSM 고정 (유일 타일 레이어)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    // ── Vworld 타일 (OSM 위에 오버레이, 실패해도 OSM 항상 보임)
-    const vwBase = L.tileLayer(vworldTileUrl('Base'), {
-      maxZoom: 19, attribution: '© Vworld',
-      crossOrigin: 'anonymous', errorTileUrl: ''
-    });
-    const vwSat = L.tileLayer(vworldTileUrl('Satellite'), {
-      maxZoom: 19, attribution: '© Vworld Satellite',
-      crossOrigin: 'anonymous', errorTileUrl: ''
-    });
-
-    // Vworld 타일 로드 성공 시 안내 (OSM은 항상 유지)
-    vwBase.on('tileload', () => {
-      if (!window._vwOkShown) { window._vwOkShown = true; showToast('Vworld 지도 로드 완료 ✓'); }
-    });
-    vwBase.on('tileerror', () => {
-      if (!window._vwErrShown) {
-        window._vwErrShown = true;
-        if (!getProxy()) showProxySetupBanner();
-        else showVworldDomainBanner();
-      }
-    });
-    // Vworld는 레이어 컨트롤에서만 선택 — OSM이 항상 기본
-    // (vwBase를 자동 추가하면 일부 타일 실패 시 검은 칸 발생)
-    L.control.layers({
-      'OpenStreetMap (기본)': osm,
-      'Vworld 기본지도 ★': vwBase,
-      'Vworld 위성 ★': vwSat,
-    }, {}, { position: 'topright' }).addTo(map);
-
-    // ── 생활안전지도 WMS 레이어 생성
-    // safemap WMS는 파라미터 대소문자 민감 → L.TileLayer 직접 서브클래스로 구현
+    // ── 생활안전지도 WMS 레이어 생성 (직접 호출, 프록시 불필요)
     SAFETY_LAYERS.forEach(lyr => {
-      const p = getProxy();
-
-      // 커스텀 TileLayer: WMS 파라미터를 정확히 제어
       const SafemapWMS = L.TileLayer.extend({
         getTileUrl: function(coords) {
           const tileBounds = this._tileCoordsToBounds(coords);
           const sw = map.options.crs.project(tileBounds.getSouthWest());
           const ne = map.options.crs.project(tileBounds.getNorthEast());
           const bbox = sw.x + ',' + sw.y + ',' + ne.x + ',' + ne.y;
-          const size = this.getTileSize();
-          const base = p
-            ? p + '/safemap/' + lyr.intId + '?key=' + SAFEMAP_KEY
-            : 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
-          return base
+          const sz = this.getTileSize();
+          return 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS'
+            + '?serviceKey=' + SAFEMAP_KEY
             + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap'
             + '&LAYERS=' + lyr.layer
             + '&STYLES=' + lyr.style
-            + '&FORMAT=image/png'
+            + '&FORMAT=image%2Fpng'
             + '&TRANSPARENT=TRUE'
-            + '&SRS=EPSG:3857'
+            + '&SRS=EPSG%3A3857'
             + '&BBOX=' + bbox
-            + '&WIDTH=' + size.x
-            + '&HEIGHT=' + size.y;
+            + '&WIDTH=' + sz.x
+            + '&HEIGHT=' + sz.y;
         }
       });
 
       wmsLayers[lyr.id] = new SafemapWMS('', {
-        tileSize: 256, opacity: 0.85,
+        tileSize: 256, opacity: 0.9,
         attribution: '© 생활안전지도(행정안전부)',
         crossOrigin: 'anonymous', zIndex: 10
       });
 
-      wmsLayers[lyr.id].on('tileerror', () => {
-        if (!wmsLayers[lyr.id]._errShown) {
-          wmsLayers[lyr.id]._errShown = true;
-          if (!p) {
-            showToast('⚠️ 생활안전지도는 Worker 프록시 설정 후 사용 가능합니다', 'warn');
-          }
+      // 오류 감지 — 사용자에게 명확한 메시지 표시
+      wmsLayers[lyr.id].on('tileerror', function(e) {
+        if (!this._errShown) {
+          this._errShown = true;
+          showToast('⚠️ ' + lyr.label + ' 레이어 오류: 생활안전지도 API 응답 없음', 'danger');
+          console.error('[SafemapWMS] tileerror', lyr.id, e);
         }
-      });
+      }.bind(wmsLayers[lyr.id]));
     });
 
     // ── 레이어 토글 버튼 생성
@@ -663,80 +598,109 @@ function showMapError(msg) {
 // 생활안전지도 레이어 토글
 function toggleSafetyLayer(id, color, btn) {
   if (!mapReady) { showToast('먼저 지도 탭을 열어주세요'); return; }
-  const lyrInfo = SAFETY_LAYERS.find(l => l.id === id);
+  const lyr = SAFETY_LAYERS.find(l => l.id === id);
   if (activeLayers.has(id)) {
     map.removeLayer(wmsLayers[id]);
     activeLayers.delete(id);
     btn.classList.remove('on');
     btn.style.background = '';
     btn.style.color = '';
-    showToast(lyrInfo.label + ' OFF');
+    showToast(lyr.label + ' 레이어 OFF');
   } else {
-    // 프록시 없어도 일단 추가 시도 (직접 CORS 차단이면 tileerror에서 처리)
+    wmsLayers[id]._errShown = false;
     wmsLayers[id].addTo(map);
     activeLayers.add(id);
     btn.classList.add('on');
     btn.style.background = color;
-    btn.style.color = color === '#ffd93d' ? '#111' : '#fff';
-    showToast(lyrInfo.label + ' ON — ' + lyrInfo.desc);
-    // 레이어 활성화 후 현재 지도 범위에서 자동 레드존 생성
-    setTimeout(() => autoRedzoneFromActiveLayer(id, lyrInfo), 1500);
+    btn.style.color = (color === '#ffd93d') ? '#111' : '#fff';
+    showToast(lyr.label + ' ON — 위험지점 레드존 자동 조회 중...');
+    autoAddRedzoneFromLayer(id);
   }
 }
 
 // 활성화된 레이어 기반 자동 레드존 — WMS GetFeatureInfo 대신
 // 현재 지도 중심 주변의 위험지점을 safemap Data API로 조회
-async function autoRedzoneFromActiveLayer(id, lyrInfo) {
-  if (!getProxy()) return; // 프록시 없으면 Data API도 CORS 차단
-  const center = map.getCenter();
-  const p = getProxy();
-  // safemap Data API (JSON 포인트 데이터)
-  // IF_0086 → 범죄, IF_0165 → 낙상, IF_0157 → 익사
-  const dataApiMap = {
-    crime:  { url: p + '/safemap-data/IF_0086', color: '#f85149', radius: 100 },
-    fall:   { url: p + '/safemap-data/IF_0165', color: '#ffd93d', radius: 50  },
-    drown:  { url: p + '/safemap-data/IF_0157', color: '#4fc3f7', radius: 60  },
-  };
-  const cfg = dataApiMap[id];
-  if (!cfg) return;
-  try {
-    const res = await fetch(
-      cfg.url + '?key=' + SAFEMAP_KEY
-      + '&lat=' + center.lat + '&lng=' + center.lng + '&radius=2000'
-    );
-    const data = await res.json();
-    if (data.items?.length) {
-      let added = 0;
-      data.items.slice(0, 10).forEach(item => {
-        if (item.lat && item.lng) {
-          addRedzoneCircle(parseFloat(item.lat), parseFloat(item.lng),
-            lyrInfo.label + ' 위험지점', id, cfg.color, cfg.radius, true);
-          added++;
-        }
-      });
-      if (added > 0) showToast('🔴 ' + lyrInfo.label + ' 레드존 ' + added + '개 자동 추가됨!');
-    }
-  } catch(e) { /* Data API 실패 시 무시 */ }
-}
-
 // 생활안전지도 레이어 → 레드존 자동 생성 (현재 지도 중심 기준)
 async function autoAddRedzoneFromLayer(layerId) {
-  const lyrInfo = SAFETY_LAYERS.find(l => l.id === layerId);
-  if (!lyrInfo) return;
-  if (!['drown','fall','crime'].includes(layerId)) return; // 레드존 자동생성 대상만
-
+  if (!['crime','fall'].includes(layerId)) return;
+  const lyr = SAFETY_LAYERS.find(l => l.id === layerId);
   const center = map.getCenter();
-  const zoom = map.getZoom();
-  const radiusMap = { drown: 60, fall: 40, crime: 150, traffic: 80 };
-  const radius = radiusMap[layerId] || 50;
+  const delta = 0.015;
+  const radiusMap = { crime: 80, fall: 30 };
+  const colorMap  = { crime: '#f85149', fall: '#ffd93d' };
+  const radius = radiusMap[layerId] || 40;
+  const color  = colorMap[layerId] || '#f85149';
 
-  // WFS/Data API로 현재 영역 내 포인트 조회 (safemap Data API)
-  // → WMS만 지원하므로 GetFeatureInfo 방식 사용
-  // 현재 지도 중심 ±0.01도 범위 내 대표 포인트 가상 생성 (실제 API 응답 대기 중)
-  // 실제 서비스에서는 safemap DataAPI로 GeoJSON 조회 필요
-  // 여기서는 WMS GetFeatureInfo로 클릭 지점 위험 정보 조회
+  // safemap WFS GetFeature로 현재 영역 내 실제 위험지점 조회
+  const bbox = `${center.lng-delta},${center.lat-delta},${center.lng+delta},${center.lat+delta}`;
+  const wfsUrl = 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_DATA'
+    + '?serviceKey=' + SAFEMAP_KEY
+    + '&SERVICE=WFS&VERSION=1.0.0&REQUEST=GetFeature'
+    + '&TYPENAME=' + lyr.layer
+    + '&BBOX=' + bbox + '&SRSNAME=EPSG:4326'
+    + '&OUTPUTFORMAT=application%2Fjson&MAXFEATURES=20';
 
-  showToast(`${lyrInfo.label} 레이어 활성화. 지도를 탭하여 위험지점을 레드존으로 추가하세요!`);
+  try {
+    const res = await fetch(wfsUrl, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    const features = json.features || [];
+    if (!features.length) {
+      showToast(lyr.label + ' — 현재 화면 범위 내 데이터 없음', 'warn');
+      return;
+    }
+    let added = 0;
+    features.forEach(f => {
+      const g = f.geometry;
+      if (!g) return;
+      let lat, lng;
+      if (g.type === 'Point') { [lng, lat] = g.coordinates; }
+      else if (g.type === 'MultiPoint') { [lng, lat] = g.coordinates[0]; }
+      else return;
+      const dup = redzones.some(r => Math.hypot((r.lat-lat)*111000,(r.lng-lng)*111000) < radius*2);
+      if (!dup) { addRedzoneCircle(lat, lng, lyr.label + ' 위험지점', layerId, color, radius, true); added++; }
+    });
+    showToast(added > 0
+      ? '✅ ' + lyr.label + ' 레드존 ' + added + '개 자동 추가'
+      : lyr.label + ' — 신규 지점 없음');
+  } catch(e) {
+    // WFS 미지원 → WMS GetFeatureInfo 폴백 (현재 지도 중심 기준)
+    console.warn('[autoRedzone WFS 실패]', e.message);
+    try {
+      const sz = map.getSize();
+      const bounds = map.getBounds();
+      const sw = map.options.crs.project(bounds.getSouthWest());
+      const ne = map.options.crs.project(bounds.getNorthEast());
+      const cp = map.latLngToContainerPoint(center);
+      const fiUrl = 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS'
+        + '?serviceKey=' + SAFEMAP_KEY
+        + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo'
+        + '&LAYERS=' + lyr.layer + '&QUERY_LAYERS=' + lyr.layer
+        + '&INFO_FORMAT=application%2Fjson&FEATURE_COUNT=10'
+        + '&SRS=EPSG%3A3857'
+        + '&BBOX=' + sw.x+','+sw.y+','+ne.x+','+ne.y
+        + '&WIDTH=' + sz.x + '&HEIGHT=' + sz.y
+        + '&X=' + Math.round(cp.x) + '&Y=' + Math.round(cp.y);
+      const r2 = await fetch(fiUrl, { signal: AbortSignal.timeout(6000) });
+      const j2 = await r2.json();
+      if (j2.features?.length) {
+        j2.features.forEach(f => {
+          const g = f.geometry;
+          if (!g) return;
+          let lat, lng;
+          if (g.type === 'Point') [lng,lat] = g.coordinates;
+          else return;
+          addRedzoneCircle(lat, lng, lyr.label, layerId, color, radius, true);
+        });
+        showToast('✅ ' + lyr.label + ' GetFeatureInfo 레드존 추가');
+      } else {
+        showToast(lyr.label + ' 위험 데이터 없음 (현재 위치)');
+      }
+    } catch(e2) {
+      showToast('⚠️ ' + lyr.label + ' 데이터 조회 실패: ' + e2.message, 'danger');
+      console.error('[autoRedzone GetFeatureInfo 실패]', e2);
+    }
+  }
 }
 
 // ════════════════════════════════════════════════
@@ -1363,91 +1327,6 @@ function showToast(msg,type='info'){
   clearTimeout(tt);tt=setTimeout(()=>t.style.opacity='0',4000);
 }
 // ── 프록시 미설정 시 안내 배너
-function showProxySetupBanner() {
-  if (document.getElementById('proxyBanner')) return;
-  const banner = document.createElement('div');
-  banner.id = 'proxyBanner';
-  banner.style.cssText = `position:fixed;bottom:80px;left:12px;right:12px;z-index:500;
-    background:#21262d;border:1px solid #d29922;border-radius:12px;padding:14px 16px;`;
-  banner.innerHTML = `
-    <div style="font-size:13px;font-weight:700;color:#d29922;margin-bottom:6px">⚠️ Vworld 지도 사용을 위한 프록시 설정 필요</div>
-    <div style="font-size:11px;color:#7d8590;margin-bottom:10px;line-height:1.6">
-      Vworld 타일·검색·생활안전지도는 브라우저 직접 호출이 차단됩니다.<br>
-      Cloudflare Workers 무료 프록시를 배포하고 URL을 입력하세요.
-    </div>
-    <div style="display:flex;gap:7px;margin-bottom:8px">
-      <input id="proxyInput" placeholder="https://xxx.workers.dev" 
-        style="flex:1;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-size:12px;padding:8px 10px;outline:none">
-      <button onclick="applyProxy()" style="background:#58a6ff;color:#0d1117;border:none;border-radius:8px;padding:0 14px;font-weight:700;font-size:12px;cursor:pointer">적용</button>
-    </div>
-    <div style="display:flex;gap:6px">
-      <button onclick="openWorkerDeploy()" style="flex:1;background:#21262d;border:1px solid #d29922;color:#d29922;border-radius:8px;padding:7px;font-size:11px;font-weight:600;cursor:pointer">📖 배포 가이드</button>
-      <button onclick="document.getElementById('proxyBanner').remove()" style="flex:1;background:#21262d;border:1px solid #30363d;color:#7d8590;border-radius:8px;padding:7px;font-size:11px;cursor:pointer">닫기 (OSM 사용)</button>
-    </div>`;
-  document.body.appendChild(banner);
-}
-
-async function applyProxy() {
-  const urlInput = document.getElementById('proxyInput')?.value?.trim()?.replace(/\/$/, '');
-  if (!urlInput || !urlInput.startsWith('http')) { showToast('올바른 URL을 입력하세요', 'warn'); return; }
-
-  showToast('Worker 연결 확인 중...');
-  try {
-    const res = await fetch(urlInput + '/ping', { signal: AbortSignal.timeout(5000) });
-    const data = await res.json();
-    if (data.ok) {
-      localStorage.setItem('proxy_url', urlInput);
-      showToast('✅ Worker 연결 확인됨! 새로고침합니다...');
-      setTimeout(() => location.reload(), 1200);
-    } else {
-      showToast('Worker 응답 오류: ' + JSON.stringify(data), 'danger');
-    }
-  } catch (e) {
-    // /ping 실패해도 일단 저장 시도
-    localStorage.setItem('proxy_url', urlInput);
-    showToast('저장됨 (연결 확인 실패: ' + e.message + '). 새로고침합니다...');
-    setTimeout(() => location.reload(), 1800);
-  }
-}
-
-
-function showVworldDomainBanner() {
-  if (document.getElementById('vworldBanner')) return;
-  const b = document.createElement('div');
-  b.id = 'vworldBanner';
-  b.style.cssText = 'position:fixed;bottom:80px;left:12px;right:12px;z-index:500;background:#21262d;border:1px solid #58a6ff;border-radius:12px;padding:14px 16px;';
-  b.innerHTML = `
-    <div style="font-size:13px;font-weight:700;color:#58a6ff;margin-bottom:6px">🗺️ Vworld 타일 표시를 위한 도메인 등록 필요</div>
-    <div style="font-size:11px;color:#7d8590;margin-bottom:10px;line-height:1.7">
-      Vworld API 키는 등록된 도메인에서만 작동합니다.<br>
-      Worker 도메인을 Vworld에 등록하거나, GitHub Pages 도메인을 직접 등록하세요.
-    </div>
-    <div style="font-size:12px;color:#e6edf3;margin-bottom:10px;line-height:1.9">
-      <b>등록 방법:</b><br>
-      1. <a href="https://www.vworld.kr" target="_blank" style="color:#58a6ff">www.vworld.kr</a> 로그인<br>
-      2. 오픈API → 인증키 관리 → 키 선택<br>
-      3. <b>사용 도메인</b>에 아래 주소 추가:
-    </div>
-    <div style="background:#0d1117;border-radius:8px;padding:8px 12px;font-family:monospace;font-size:12px;color:#58a6ff;margin-bottom:10px;" id="workerDomainText">
-      ${getProxy().replace('https://','').replace('http://','')}
-    </div>
-    <div style="display:flex;gap:6px">
-      <button onclick="window.open('https://www.vworld.kr/dev/mypage.do','_blank')" 
-        style="flex:1;background:#58a6ff;color:#0d1117;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">
-        Vworld 도메인 등록 →
-      </button>
-      <button onclick="document.getElementById('vworldBanner').remove()" 
-        style="flex:1;background:#21262d;border:1px solid #30363d;color:#7d8590;border-radius:8px;padding:8px;font-size:12px;cursor:pointer">
-        닫기 (OSM 사용)
-      </button>
-    </div>`;
-  document.body.appendChild(b);
-}
-
-function openWorkerDeploy() {
-  window.open('https://workers.cloudflare.com', '_blank');
-  showToast('Cloudflare Workers 페이지를 열었습니다.\ncloudflare-worker.js 파일 내용을 붙여넣으세요');
-}
 
 // ════════════════════════════════════════════════
 // 초기화
@@ -1458,24 +1337,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('heroDate').textContent=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${days[now.getDay()]})`;
   document.getElementById('rDT').value=now.toISOString().slice(0,16);
 
-  // 프록시 상태바 렌더링
-  const psb = document.getElementById('proxyStatusBar');
-  if (psb) {
-    if (getProxy()) {
-      psb.style.background = 'rgba(63,185,80,.1)';
-      psb.style.border = '1px solid rgba(63,185,80,.3)';
-      psb.innerHTML = `<span style="color:#3fb950;font-size:16px">✅</span>
-        <span style="color:#3fb950;font-weight:600">프록시 연결됨</span>
-        <span style="color:#7d8590;flex:1;margin-left:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${getProxy()}</span>
-        <button onclick="localStorage.removeItem('proxy_url');location.reload()" style="background:none;border:none;color:#7d8590;cursor:pointer;font-size:13px">✕</button>`;
-    } else {
-      psb.style.background = 'rgba(210,153,34,.08)';
-      psb.style.border = '1px solid rgba(210,153,34,.3)';
-      psb.innerHTML = `<span style="font-size:16px">⚠️</span>
-        <span style="color:#d29922;font-weight:600">프록시 미설정 — OSM 지도 사용 중</span>
-        <button onclick="showProxySetupBanner()" style="margin-left:auto;background:#d29922;color:#111;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">설정</button>`;
-    }
-  }
+
   syncFromStorage();refreshAllUI();
   setInterval(()=>{syncFromStorage();updateAllStats();},4000);
   if(Notification.permission==='default')Notification.requestPermission();
