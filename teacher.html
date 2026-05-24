@@ -449,11 +449,11 @@ function safemapWmsUrl(intId) {
   return 'https://www.safemap.go.kr/openApi2/' + intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
 }
 
-// 생활안전지도 WMS 레이어 정의
+// 생활안전지도 WMS 레이어 정의 (공식 API 문서 기준)
 const SAFETY_LAYERS = [
   { id:'crime',    intId:'IF_0086', layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All',  label:'🚨 범죄주의구간', color:'#f85149' },
+  { id:'fall',     intId:'IF_0165', layer:'A2SM_FLLNSPOT',       style:'A2SM_FllnSpot',             label:'⚠️ 추락낙상사고', color:'#ffd93d' },
   { id:'drown',    intId:'IF_0157', layer:'A2SM_FDIVNSPOT',      style:'A2SM_FdivnSpot',            label:'🌊 익사사고지점', color:'#4fc3f7' },
-  { id:'fall',     intId:'IF_0165', layer:'A2SM_FLLNSPOT',       style:'A2SM_FllnSpot',             label:'⚠️ 낙상사고지점', color:'#ffd93d' },
   { id:'traffic',  intId:'IF_0179', layer:'A2SM_TRFCACDNT',      style:'A2SM_TrfcAcdnt',            label:'🚗 교통사고다발', color:'#ff9800' },
   { id:'hospital', intId:'IF_0169', layer:'A2SM_EMGHSPTAL',      style:'A2SM_EmgHsptal',            label:'🏥 응급의료기관', color:'#3fb950' },
 ];
@@ -543,30 +543,31 @@ function initMap() {
       maxZoom: 19, attribution: '© OpenStreetMap'
     }).addTo(map);
 
-    // ── Vworld 타일 (프록시 경유 또는 직접 시도)
+    // ── Vworld 타일 (OSM 위에 오버레이, 실패해도 OSM 항상 보임)
     const vwBase = L.tileLayer(vworldTileUrl('Base'), {
-      maxZoom: 19, attribution: '© Vworld', crossOrigin: ''
+      maxZoom: 19, attribution: '© Vworld',
+      crossOrigin: 'anonymous', errorTileUrl: ''
     });
     const vwSat = L.tileLayer(vworldTileUrl('Satellite'), {
-      maxZoom: 19, attribution: '© Vworld Satellite', crossOrigin: ''
+      maxZoom: 19, attribution: '© Vworld Satellite',
+      crossOrigin: 'anonymous', errorTileUrl: ''
     });
-    let vwOk = 0, vwFail = 0;
+
+    let vwOkCount = 0;
     vwBase.on('tileload', () => {
-      vwOk++;
-      if (vwOk === 3) {
-        map.removeLayer(osm);
+      vwOkCount++;
+      if (vwOkCount === 5) {
+        // Vworld 성공 시 OSM 제거 (깔끔하게)
+        if (map.hasLayer(osm)) { map.removeLayer(osm); }
         showToast('Vworld 지도 로드 완료 ✓');
       }
     });
     vwBase.on('tileerror', () => {
-      vwFail++;
-      if (vwFail >= 3 && vwOk === 0) {
-        if (!getProxy()) {
-          showProxySetupBanner();
-        } else {
-          // Vworld 타일 실패 시 → Vworld 도메인 등록 안내 배너 표시
-          showVworldDomainBanner();
-        }
+      // 실패해도 OSM이 보임 → 안내만
+      if (vwOkCount === 0 && !window._vwErrShown) {
+        window._vwErrShown = true;
+        if (!getProxy()) showProxySetupBanner();
+        else showVworldDomainBanner();
       }
     });
     vwBase.addTo(map);
@@ -578,31 +579,46 @@ function initMap() {
     }).addTo(map);
 
     // ── 생활안전지도 WMS 레이어 생성
-    // Worker 프록시 있으면 경유, 없으면 직접 URL (serviceKey 포함)
+    // safemap WMS는 파라미터 대소문자 민감 → L.TileLayer 직접 서브클래스로 구현
     SAFETY_LAYERS.forEach(lyr => {
       const p = getProxy();
-      // 프록시 경유: /safemap/{intId}?key=...&layers=...&styles=...
-      // 직접 호출: safemap.go.kr URL (CORS 허용 여부에 따라 작동)
-      const baseUrl = p
-        ? p + '/safemap/' + lyr.intId + '?key=' + SAFEMAP_KEY
-        : 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
 
-      wmsLayers[lyr.id] = L.tileLayer.wms(baseUrl, {
-        layers:      lyr.layer,
-        styles:      lyr.style,
-        format:      'image/png',
-        transparent: true,
-        version:     '1.1.1',
-        srs:         'EPSG:3857',
-        crossOrigin: 'anonymous',
-        attribution: '© 생활안전지도(행정안전부)',
+      // 커스텀 TileLayer: WMS 파라미터를 정확히 제어
+      const SafemapWMS = L.TileLayer.extend({
+        getTileUrl: function(coords) {
+          const tileBounds = this._tileCoordsToBounds(coords);
+          const sw = map.options.crs.project(tileBounds.getSouthWest());
+          const ne = map.options.crs.project(tileBounds.getNorthEast());
+          const bbox = sw.x + ',' + sw.y + ',' + ne.x + ',' + ne.y;
+          const size = this.getTileSize();
+          const base = p
+            ? p + '/safemap/' + lyr.intId + '?key=' + SAFEMAP_KEY
+            : 'https://www.safemap.go.kr/openApi2/' + lyr.intId + '_WMS?serviceKey=' + SAFEMAP_KEY;
+          return base
+            + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap'
+            + '&LAYERS=' + lyr.layer
+            + '&STYLES=' + lyr.style
+            + '&FORMAT=image/png'
+            + '&TRANSPARENT=TRUE'
+            + '&SRS=EPSG:3857'
+            + '&BBOX=' + bbox
+            + '&WIDTH=' + size.x
+            + '&HEIGHT=' + size.y;
+        }
       });
 
-      // 타일 오류 감지 → 안내
+      wmsLayers[lyr.id] = new SafemapWMS('', {
+        tileSize: 256, opacity: 0.85,
+        attribution: '© 생활안전지도(행정안전부)',
+        crossOrigin: 'anonymous', zIndex: 10
+      });
+
       wmsLayers[lyr.id].on('tileerror', () => {
-        if (!p && !wmsLayers[lyr.id]._errShown) {
+        if (!wmsLayers[lyr.id]._errShown) {
           wmsLayers[lyr.id]._errShown = true;
-          showToast('생활안전지도 레이어는 프록시(Worker) 설정 후 사용 가능합니다', 'warn');
+          if (!p) {
+            showToast('⚠️ 생활안전지도는 Worker 프록시 설정 후 사용 가능합니다', 'warn');
+          }
         }
       });
     });
