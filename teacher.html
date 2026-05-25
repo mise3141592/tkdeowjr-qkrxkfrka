@@ -834,11 +834,7 @@ function qs(t){document.getElementById('chin').value=t;sendChat();}
 // }
 function callAI(prompt, max) {
   var apiKey = 'AIzaSyA7ld7d57ydK9H95CrPYAuoKqyPRwqLr10';
-  
-  // ✨ 사용할 모델 명 지정 (안정적인 gemini-2.5-flash 설정)
-  // 최신 모델을 원하시면 'gemini-3.5-flash'로 변경하셔도 됩니다.
   var modelName = 'gemini-2.5-flash'; 
-  
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
   
   return fetch(url, {
@@ -864,20 +860,14 @@ function callAI(prompt, max) {
     return res.json();
   })
   .then(function(d) {
-    // 응답 구조에서 텍스트 추출
-    if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts && d.candidates[0].content.parts[0]) {
-      return d.candidates[0].content.parts[0].text || '';
+    // ✨ [버그 수정] parts[0]만 가져오던 것을 모든 parts 조각을 모아 합치도록 변경
+    if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) {
+      return d.candidates[0].content.parts.map(function(p) {
+        return p.text || '';
+      }).join('');
     }
     return '답변을 생성할 수 없습니다.';
   });
-}
-function runRoute(){
-  var s=document.getElementById('rS').value, e=document.getElementById('rE').value;
-  document.getElementById('routeC').style.display='none';
-  document.getElementById('routeR').innerHTML='<div style="text-align:center;padding:20px"><div class="spin" style="margin:0 auto"></div><div style="font-size:13px;color:var(--dm);margin-top:10px">AI 분석 중...</div></div>';
-  callAI('현장체험학습 안전경로 분석. 출발:'+s+'→'+e+'. 교통사고:경부선855건위험/당진청주선5건안전.\n🥇 추천경로\n경유노선:[]\n안전도:⭐⭐⭐⭐⭐\n이유:\n🥈 대안경로\n경유노선:[]\n안전도:⭐⭐⭐⭐\n⚠️ 주의사항 3가지\n✅ 교사 책임보호 2가지',1200)
-    .then(function(r){document.getElementById('routeR').innerHTML='<div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+r+'</div><button class="btn btn-s2" style="margin-top:10px" onclick="document.getElementById(\'routeC\').style.display=\'block\';document.getElementById(\'routeR\').innerHTML=\'\'">← 다시 분석</button>';})
-    .catch(function(e){document.getElementById('routeR').innerHTML='<div style="color:var(--rd);font-size:13px;padding:10px">오류: '+e.message+'</div>';document.getElementById('routeC').style.display='block';});
 }
 
 // ── 유틸
