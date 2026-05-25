@@ -833,6 +833,18 @@ function show119(sid){
 function confirmEmerg(){clearInterval(e119t);var s=loadDB().find(function(x){return x.stage===3;});if(s)resolveAlert(s.id);closeM('emergM');showToast('✅ 교사 확인. 119 취소.');}
 function force119(sid){clearInterval(e119t);closeM('emergM');var s=sid?getStudent(sid):loadDB().find(function(x){return x.stage>=2;});var msg=s?('[자동신고] '+s.name+'(각화중 현장체험학습) 구역이탈 | 위치:'+(s.lat?s.lat.toFixed(5):'불명')+','+(s.lng?s.lng.toFixed(5):'불명')):'긴급:학생이탈 자동신고';window.location.href='sms:119?body='+encodeURIComponent(msg);}
 
+// 💡 빠른 질문 버튼 클릭 시 텍스트 입력창에 자동으로 채우고 대화를 전송하는 함수
+function qs(text) {
+  var el = document.getElementById('chin');
+  if (el) {
+    el.value = text;
+    // 텍스트가 채워진 후 자동으로 입력창 높이를 조절하고 AI에게 전송합니다.
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+    sendChat(); 
+  }
+}
+  
 // ── AI 챗봇
 function sendChat(){
   var el=document.getElementById('chin');var msg=el.value.trim();if(!msg)return;
