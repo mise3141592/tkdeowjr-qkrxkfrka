@@ -851,8 +851,34 @@ function addMsg(role,text){
   ca.innerHTML+='<div class="cm '+role+'"><div class="mb">'+text.replace(/\n/g,'<br>')+'</div><div class="mtime">'+time+'</div></div>';
   ca.scrollTop=9999;
 }
+// ── 쿼터 초과 쿨다운 관리
+var _aiCooldownUntil = 0, _aiCooldownTimer = null;
+function setAICooldown(seconds) {
+  _aiCooldownUntil = Date.now() + seconds * 1000;
+  var btn = document.getElementById('chsend');
+  clearInterval(_aiCooldownTimer);
+  _aiCooldownTimer = setInterval(function() {
+    var left = Math.ceil((_aiCooldownUntil - Date.now()) / 1000);
+    if (left <= 0) {
+      clearInterval(_aiCooldownTimer);
+      if (btn) { btn.disabled = false; btn.textContent = '➤'; btn.style.opacity = '1'; }
+      showToast('✅ AI 사용 가능 — 다시 시도하세요', 'gr');
+    } else {
+      if (btn) { btn.disabled = true; btn.textContent = left + 's'; btn.style.opacity = '0.5'; }
+    }
+  }, 500);
+}
+function isAICoolingDown() {
+  return Date.now() < _aiCooldownUntil;
+}
+
 function callAI(prompt, max) {
-  // 1. 브라우저 저장소에서 API 키 확인, 없으면 팝업으로 입력받음
+  // 1. 쿨다운 중이면 즉시 거부
+  if (isAICoolingDown()) {
+    var left = Math.ceil((_aiCooldownUntil - Date.now()) / 1000);
+    return Promise.reject(new Error('쿼터 초과 대기 중... ' + left + '초 후 재시도하세요.'));
+  }
+  // 2. 브라우저 저장소에서 API 키 확인, 없으면 팝업으로 입력받음
   var apiKey = localStorage.getItem('GEMINI_API_KEY');
   if (!apiKey) {
     apiKey = window.prompt('Gemini API 키를 입력하세요.\n(입력된 키는 사용자 브라우저에만 안전하게 저장됩니다.)');
@@ -862,8 +888,8 @@ function callAI(prompt, max) {
     localStorage.setItem('GEMINI_API_KEY', apiKey);
   }
 
-  // 안정적인 모델 사용 (끊김 방지)
-  var modelName = 'gemini-2.0-flash';
+  // gemini-2.5-flash 사용 (안정적)
+  var modelName = 'gemini-2.5-flash';
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
   
   return fetch(url, {
@@ -883,7 +909,14 @@ function callAI(prompt, max) {
         localStorage.removeItem('GEMINI_API_KEY');
       }
       return res.json().then(function(e) {
-        throw new Error(e.error && e.error.message || 'HTTP ' + res.status);
+        var msg = e.error && e.error.message || 'HTTP ' + res.status;
+        // 쿼터 초과(429) 시 retry 시간 파싱해서 쿨다운 설정
+        if (res.status === 429 || (msg && msg.indexOf('quota') !== -1) || (msg && msg.indexOf('Quota') !== -1)) {
+          var retryMatch = msg.match(/retry in ([\d.]+)s/i);
+          var waitSec = retryMatch ? Math.ceil(parseFloat(retryMatch[1])) + 2 : 60;
+          setAICooldown(waitSec);
+        }
+        throw new Error(msg);
       });
     }
     return res.json();
@@ -909,6 +942,11 @@ function sendChat(){
   var el = document.getElementById('chin');
   var msg = el.value.trim();
   if(!msg) return;
+  if(isAICoolingDown()) {
+    var left = Math.ceil((_aiCooldownUntil - Date.now()) / 1000);
+    showToast('⏳ ' + left + '초 후 재시도하세요 (쿼터 초과 대기 중)', 'warn');
+    return;
+  }
   
   el.value = '';
   el.style.height = 'auto';
