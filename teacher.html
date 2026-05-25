@@ -461,7 +461,7 @@ function runRoute(){
                '⚠️ 주의사항 3가지\n\n' +
                '✅ 교사 책임보호 2가지';
 
-  callAI(prompt, 1500)
+  callAI(prompt, 2048)
     .then(function(r){document.getElementById('routeR').innerHTML='<div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+r+'</div><button class="btn btn-s2" style="margin-top:10px" onclick="document.getElementById(\'routeC\').style.display=\'block\';document.getElementById(\'routeR\').innerHTML=\'\'">← 다시 분석</button>';})
     .catch(function(e){document.getElementById('routeR').innerHTML='<div style="color:var(--rd);font-size:13px;padding:10px">오류: '+e.message+'</div>';document.getElementById('routeC').style.display='block';});
 }
@@ -845,25 +845,6 @@ function qs(text) {
   }
 }
   
-// ── AI 챗봇
-function sendChat(){
-  var el=document.getElementById('chin');var msg=el.value.trim();if(!msg)return;
-  el.value='';el.style.height='auto';addMsg('u',msg);
-  var tid='t'+Date.now();
-  document.getElementById('chatArea').innerHTML+='<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
-  document.getElementById('chatArea').scrollTop=9999;
-  
-  // ✨ 끊김 방지용으로 고도화된 프롬프트 작성
-  var prompt = '당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n\n' +
-               '[학교 규정]\n' + SCHOOL_RULES + '\n\n' +
-               '[학부모 민원]\n"' + msg + '"\n\n' +
-               '[답변 작성 원칙]\n1. 학부모의 마음에 공감할 것\n2. 학교 규정 및 지침을 명확한 근거로 제시할 것\n3. 규정 위반 사항에 대해서는 단호하게 거절할 것\n4. 가능한 현실적인 대안을 함께 제시할 것\n\n' +
-               '[중요 요구사항]\n- 반드시 문장 마침표(.)로 명확하게 끝나는 완결된 문장 형태로 답변을 마치세요.\n- 답변은 너무 길지 않게 줄글 형태로 3~4문장 내외로 간결하게 작성하세요.';
-
-  callAI(prompt, 1000)
-    .then(function(r){document.getElementById(tid).remove();addMsg('b',r);})
-    .catch(function(e){document.getElementById(tid).remove();addMsg('b','⚠️ AI 오류: '+e.message);});
-}
 function addMsg(role,text){
   var ca=document.getElementById('chatArea'),now=new Date();
   var time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
@@ -881,8 +862,8 @@ function callAI(prompt, max) {
     localStorage.setItem('GEMINI_API_KEY', apiKey);
   }
 
-  // 범용적이고 안정적인 모델명 사용
-  var modelName = 'gemini-2.5-flash'; 
+  // 안정적인 모델 사용 (끊김 방지)
+  var modelName = 'gemini-1.5-flash';
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
   
   return fetch(url, {
@@ -891,8 +872,8 @@ function callAI(prompt, max) {
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: { 
-        maxOutputTokens: max || 2000,
-        temperature: 0.2 // 답변의 일관성을 높이기 위해 온도를 낮춤
+        maxOutputTokens: max || 2048,
+        temperature: 0.2
       }
     })
   })
@@ -923,8 +904,7 @@ function callAI(prompt, max) {
     return '답변을 생성할 수 없습니다.';
   });
 }
-// 2. 메시지 끊김 방지 지침이 추가된 채팅 발송 함수
-// 기존 sendChat 함수를 아래 코드로 교체합니다.
+// 2. 메시지 끊김 방지 — 민원 채팅 발송 함수
 function sendChat(){
   var el = document.getElementById('chin');
   var msg = el.value.trim();
@@ -938,18 +918,17 @@ function sendChat(){
   document.getElementById('chatArea').innerHTML += '<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
   document.getElementById('chatArea').scrollTop = 9999;
 
-  // ✨ 글자 수 제한을 없애고 3단 구조(도입-근거-대안)를 완벽히 채우도록 지시
   var optimizedPrompt = '당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n\n' +
                         '[학교 규정]\n' + SCHOOL_RULES + '\n\n' +
                         '[학부모 민원]\n"' + msg + '"\n\n' +
                         '[답변 작성 구조]\n' +
-                        '글자 수 제한은 없습니다. 반드시 아래의 3단계 구조를 순서대로 완벽하게 작성하여 대답을 완성하세요.\n' +
-                        '1. 도입: 학부모의 민원 내용에 대한 공감과 정중한 인사\n' +
-                        '2. 근거: 학교 규정 및 지침에 기반하여 변경 불가함을 명확하고 단호하게 안내\n' +
-                        '3. 대안 및 마무리: 적용 가능한 현실적인 대안(또는 차선책) 제시 및 정중한 끝맺음 인사\n\n' +
-                        '주의: 각 단계를 줄바꿈으로 구분하고, 3단계의 끝맺음 인사가 끝나기 전에는 절대로 답변을 중단하지 마십시오.';
+                        '반드시 아래 3단계 구조를 순서대로 완성하세요.\n' +
+                        '1. 도입: 학부모의 민원에 공감하는 정중한 인사\n' +
+                        '2. 근거: 학교 규정 기반으로 변경 불가함을 명확히 안내\n' +
+                        '3. 대안 및 마무리: 현실적인 대안 제시 및 끝맺음 인사\n\n' +
+                        '주의: 각 단계를 줄바꿈으로 구분하고, 마지막 인사가 끝날 때까지 답변을 중단하지 마십시오.';
 
-  callAI(optimizedPrompt, 1500)
+  callAI(optimizedPrompt, 2048)
     .then(function(r){
       document.getElementById(tid).remove();
       addMsg('b', r);
