@@ -915,7 +915,7 @@ function callAI(prompt, max) {
         temperature: 0.2
       },
       // thinking 비활성화 — thinking 토큰이 출력 토큰을 잡아먹는 문제 방지
-      thinkingConfig: { thinkingBudget: 0 }
+      thinking_config: { thinking_budget: 0 }
     })
   })
   .then(function(res) {
