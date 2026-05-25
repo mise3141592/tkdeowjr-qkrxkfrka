@@ -832,6 +832,7 @@ function qs(t){document.getElementById('chin').value=t;sendChat();}
 //     .then(function(res){if(!res.ok)return res.json().then(function(e){throw new Error(e.error&&e.error.message||'HTTP '+res.status);});return res.json();})
 //     .then(function(d){return (d.content||[]).map(function(c){return c.text||'';}).join('');});
 // }
+// 1. Gemini API 호출 함수 (gemini-2.5-flash 적용 및 설정 최적화)
 function callAI(prompt, max) {
   var apiKey = 'AIzaSyA7ld7d57ydK9H95CrPYAuoKqyPRwqLr10';
   var modelName = 'gemini-2.5-flash'; 
@@ -847,7 +848,8 @@ function callAI(prompt, max) {
         parts: [{ text: prompt }]
       }],
       generationConfig: {
-        maxOutputTokens: max || 800
+        maxOutputTokens: max || 1000, // 충분한 토큰 확보로 버퍼링 차단
+        temperature: 0.5 // 답변의 일관성 및 논리 구조 강화
       }
     })
   })
@@ -860,14 +862,31 @@ function callAI(prompt, max) {
     return res.json();
   })
   .then(function(d) {
-    // ✨ [버그 수정] parts[0]만 가져오던 것을 모든 parts 조각을 모아 합치도록 변경
-    if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) {
-      return d.candidates[0].content.parts.map(function(p) {
-        return p.text || '';
-      }).join('');
+    if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts && d.candidates[0].content.parts[0]) {
+      return d.candidates[0].content.parts[0].text || '';
     }
     return '답변을 생성할 수 없습니다.';
   });
+}
+
+// 2. 메시지 끊김 방지 지침이 추가된 채팅 발송 함수
+function sendChat(){
+  var el=document.getElementById('chin');var msg=el.value.trim();if(!msg)return;
+  el.value='';el.style.height='auto';addMsg('u',msg);
+  var tid='t'+Date.now();
+  document.getElementById('chatArea').innerHTML+='<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
+  document.getElementById('chatArea').scrollTop=9999;
+
+  // ✨ 문장이 중간에 잘리지 않고 온전하게 마무리되도록 프롬프트 지침을 강화했습니다.
+  var optimizedPrompt = '당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n' +
+                        '[규정]\n' + SCHOOL_RULES + '\n' +
+                        '[민원 내용]\n"' + msg + '"\n' +
+                        '[답변 원칙] 1.학부모 마음에 공감 2.학교 규정 근거 명시 3.변경 불가함을 단호하게 안내 4.차선책이나 대안 제시\n' +
+                        '[중요 요구사항] 답변은 공백 포함 200~250자 내외로 간결하게 작성하되, **절대로 문장 중간에 글을 끊지 마십시오. 반드시 마지막 문장은 마침표(.)로 끝나는 완결된 형태의 올바른 문장으로 마무리해야 합니다.**';
+
+  callAI(optimizedPrompt, 1000)
+    .then(function(r){document.getElementById(tid).remove();addMsg('b',r);})
+    .catch(function(e){document.getElementById(tid).remove();addMsg('b','⚠️ AI 오류: '+e.message);});
 }
 
 // ── 유틸
