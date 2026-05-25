@@ -10,28 +10,18 @@
 <title>교사 관리앱</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#0d1117;--s1:#161b22;--s2:#21262d;--s3:#2d333b;
-  --ac:#58a6ff;--gr:#3fb950;--rd:#f85149;--yw:#d29922;
-  --tx:#e6edf3;--dm:#7d8590;--br:rgba(255,255,255,0.08);
-  --r:12px;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);
-}
+:root{--bg:#0d1117;--s1:#161b22;--s2:#21262d;--s3:#2d333b;--ac:#58a6ff;--gr:#3fb950;--rd:#f85149;--yw:#d29922;--tx:#e6edf3;--dm:#7d8590;--br:rgba(255,255,255,0.08);--r:12px;--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--bg)}
-body{font-family:'Noto Sans KR',sans-serif;color:var(--tx);
-  display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
-.topbar{height:calc(var(--st)+48px);padding-top:var(--st);background:var(--bg);border-bottom:1px solid var(--br);
-  display:flex;align-items:flex-end;justify-content:space-between;
-  padding-left:16px;padding-right:16px;padding-bottom:10px;flex-shrink:0;z-index:50}
+body{font-family:"Noto Sans KR",sans-serif;color:var(--tx);display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
+.topbar{height:calc(var(--st) + 48px);padding-top:var(--st);background:var(--bg);border-bottom:1px solid var(--br);display:flex;align-items:flex-end;justify-content:space-between;padding-left:16px;padding-right:16px;padding-bottom:10px;flex-shrink:0;z-index:50}
 .topbar-title{font-size:16px;font-weight:700;color:var(--ac)}
 .pill{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:none;cursor:pointer;font-family:inherit}
-.pill-rd{background:var(--rd);color:#fff}
-.pill-gr{background:var(--gr);color:var(--bg)}
+.pill-rd{background:var(--rd);color:#fff}.pill-gr{background:var(--gr);color:var(--bg)}
 .scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:12px 14px 80px}
 .scroll::-webkit-scrollbar{display:none}
 .pg{display:none}.pg.on{display:block}
-.hero{background:linear-gradient(135deg,rgba(88,166,255,.12),rgba(188,140,255,.08));
-  border:1px solid rgba(88,166,255,.2);border-radius:var(--r);padding:18px;margin-bottom:10px}
+.hero{background:linear-gradient(135deg,rgba(88,166,255,.12),rgba(188,140,255,.08));border:1px solid rgba(88,166,255,.2);border-radius:var(--r);padding:18px;margin-bottom:10px}
 .hero h2{font-size:20px;font-weight:900;line-height:1.3}
 .hero .sub{font-size:12px;color:var(--dm);margin-top:4px}
 .stats-row{display:flex;margin-top:14px;border-radius:10px;overflow:hidden;background:var(--s2);border:1px solid var(--br)}
@@ -46,41 +36,33 @@ body{font-family:'Noto Sans KR',sans-serif;color:var(--tx);
 .mc{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:16px 12px;cursor:pointer;transition:.15s}
 .mc:active{transform:scale(.95)}.mc .ico{font-size:24px;margin-bottom:6px}
 .mc .lbl{font-size:13px;font-weight:700}.mc .sub2{font-size:11px;color:var(--dm);margin-top:2px;line-height:1.4}
-.mc.bl{border-color:rgba(88,166,255,.3);background:rgba(88,166,255,.06)}
-.mc.gr{border-color:rgba(63,185,80,.3);background:rgba(63,185,80,.06)}
-.mc.rd{border-color:rgba(248,81,73,.3);background:rgba(248,81,73,.06)}
-.mc.yw{border-color:rgba(210,153,34,.3);background:rgba(210,153,34,.06)}
-.sr{background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:11px 13px;
-  display:flex;align-items:center;gap:11px;margin-bottom:7px;cursor:pointer}
+.mc.bl{border-color:rgba(88,166,255,.3);background:rgba(88,166,255,.06)}.mc.gr{border-color:rgba(63,185,80,.3);background:rgba(63,185,80,.06)}
+.mc.rd{border-color:rgba(248,81,73,.3);background:rgba(248,81,73,.06)}.mc.yw{border-color:rgba(210,153,34,.3);background:rgba(210,153,34,.06)}
+.sr{background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:11px 13px;display:flex;align-items:center;gap:11px;margin-bottom:7px;cursor:pointer}
 .sr:active{transform:scale(.98)}
 .av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
 .si{flex:1}.sn{font-size:14px;font-weight:700}.sd{font-size:11px;color:var(--dm);margin-top:1px}
 .bdg{font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px}
 .b-safe{background:rgba(63,185,80,.18);color:var(--gr)}.b-warn{background:rgba(248,81,73,.18);color:var(--rd)}.b-off{background:rgba(125,133,144,.18);color:var(--dm)}
 #vmap{width:100%;border-radius:var(--r);border:1px solid var(--br);margin-bottom:10px;background:#1c2128;display:none}
-#mapLoading{width:100%;border-radius:var(--r);border:1px solid var(--br);background:var(--s1);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;padding:40px 20px}
+#mapLoading{width:100%;border-radius:var(--r);border:1px solid var(--br);background:var(--s1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;padding:40px 20px}
 .spin{width:28px;height:28px;border:3px solid var(--br);border-top-color:var(--ac);border-radius:50%;animation:sp .6s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 .maptb{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-.tbtn{padding:7px 10px;border-radius:8px;border:1px solid var(--br);background:var(--s2);color:var(--tx);
-  font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.tbtn{padding:7px 10px;border-radius:8px;border:1px solid var(--br);background:var(--s2);color:var(--tx);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
 .tbtn:active{transform:scale(.95)}.tbtn.draw-on{background:var(--yw);border-color:var(--yw);color:#111}
 .tbtn.rz-on{background:var(--rd);border-color:var(--rd);color:#fff}
 .layer-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
-.lbtn{padding:5px 9px;border-radius:18px;border:1px solid var(--br);background:var(--s2);
-  color:var(--dm);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer}
+.lbtn{padding:5px 9px;border-radius:18px;border:1px solid var(--br);background:var(--s2);color:var(--dm);font-family:inherit;font-size:11px;font-weight:600;cursor:pointer}
 .lbtn.on{color:#fff}
 .zchips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;min-height:22px}
-.zchip{display:inline-flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--br);border-radius:18px;padding:4px 10px;font-size:11px;cursor:pointer}
+.zchip{display:inline-flex;align-items:center;gap:4px;background:var(--s2);border:1px solid var(--br);border-radius:18px;padding:4px 10px;font-size:11px}
 .strow{display:flex;gap:7px;margin-bottom:10px}
 .stc{flex:1;background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:11px;text-align:center}
 .stn{font-size:20px;font-weight:900;line-height:1}.stl{font-size:10px;color:var(--dm);margin-top:2px}
 .sb2{border-radius:10px;padding:13px;margin-bottom:8px;border:2px solid}
-.sb2.s0{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.25)}
-.sb2.s1{background:rgba(210,153,34,.07);border-color:rgba(210,153,34,.5);animation:ab .8s infinite}
-.sb2.s2{background:rgba(248,81,73,.1);border-color:rgba(248,81,73,.7);animation:ab .6s infinite}
-.sb2.s3{background:rgba(220,0,0,.15);border-color:red;animation:ab .4s infinite}
+.sb2.s0{background:rgba(63,185,80,.07);border-color:rgba(63,185,80,.25)}.sb2.s1{background:rgba(210,153,34,.07);border-color:rgba(210,153,34,.5);animation:ab .8s infinite}
+.sb2.s2{background:rgba(248,81,73,.1);border-color:rgba(248,81,73,.7);animation:ab .6s infinite}.sb2.s3{background:rgba(220,0,0,.15);border-color:red;animation:ab .4s infinite}
 .cbar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:8px}
 .cfill{height:100%;background:var(--rd);border-radius:3px;transition:width 1s linear}
 .chwrap{display:flex;flex-direction:column;height:calc(100vh - 200px)}
@@ -95,8 +77,7 @@ body{font-family:'Noto Sans KR',sans-serif;color:var(--tx);
 .td{width:6px;height:6px;background:var(--dm);border-radius:50%;animation:tb 1.2s infinite}
 .td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
 @keyframes tb{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-.chin{flex:1;background:var(--s1);border:1px solid var(--br);border-radius:18px;color:var(--tx);
-  font-family:inherit;font-size:14px;padding:9px 15px;outline:none;resize:none;max-height:90px;line-height:1.4}
+.chin{flex:1;background:var(--s1);border:1px solid var(--br);border-radius:18px;color:var(--tx);font-family:inherit;font-size:14px;padding:9px 15px;outline:none;resize:none;max-height:90px;line-height:1.4}
 .chin:focus{border-color:var(--ac)}
 .chsend{width:40px;height:40px;background:var(--ac);border:none;border-radius:50%;color:var(--bg);font-size:17px;cursor:pointer}
 .chsend:active{transform:scale(.9)}
@@ -116,8 +97,7 @@ body{font-family:'Noto Sans KR',sans-serif;color:var(--tx);
 select.iif option{background:var(--bg)}
 .btn{width:100%;padding:12px;border-radius:10px;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.15s}
 .btn:active{transform:scale(.97)}
-.btn-ac{background:var(--ac);color:var(--bg)}.btn-gr{background:var(--gr);color:var(--bg)}
-.btn-rd{background:var(--rd);color:#fff}.btn-s2{background:var(--s2);color:var(--tx);border:1px solid var(--br)}
+.btn-ac{background:var(--ac);color:var(--bg)}.btn-gr{background:var(--gr);color:var(--bg)}.btn-rd{background:var(--rd);color:#fff}.btn-s2{background:var(--s2);color:var(--tx);border:1px solid var(--br)}
 .mover{position:fixed;inset:0;background:rgba(0,0,0,.87);z-index:200;display:none;align-items:flex-end;backdrop-filter:blur(3px)}
 .mover.on{display:flex}
 .msheet{background:var(--s1);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:0 18px 32px;animation:sup .28s cubic-bezier(.34,1.56,.64,1)}
@@ -125,7 +105,7 @@ select.iif option{background:var(--bg)}
 .mhandle{width:36px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:11px auto 16px}
 .mtitle{font-size:19px;font-weight:900;margin-bottom:14px}
 .mclose{position:absolute;top:18px;right:18px;background:var(--s2);border:none;color:var(--tx);width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer}
-.bnav{background:var(--s1);border-top:1px solid var(--br);display:flex;padding-bottom:calc(var(--sb)+4px);flex-shrink:0}
+.bnav{background:var(--s1);border-top:1px solid var(--br);display:flex;padding-bottom:calc(var(--sb) + 4px);flex-shrink:0}
 .ni{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 0;cursor:pointer;position:relative}
 .ni:active{opacity:.6}.nico{font-size:21px;transition:transform .15s}
 .nlbl{font-size:10px;color:var(--dm);margin-top:2px;font-weight:500}
@@ -141,22 +121,21 @@ select.iif option{background:var(--bg)}
 <body>
 
 <div class="topbar">
-  <span class="topbar-title">🏫 교사 관리앱</span>
+  <span class="topbar-title">&#x1F3EB; 교사 관리앱</span>
   <div style="display:flex;gap:7px;align-items:center">
     <button class="pill pill-rd" id="alertPill" style="display:none">경보 0</button>
     <button class="pill pill-gr" id="dbPill">학생 0명</button>
-    <span style="font-size:20px;cursor:pointer;padding:2px 6px" onclick="showM('moreM')">⋯</span>
+    <span style="font-size:20px;cursor:pointer;padding:2px 6px" onclick="showM('moreM')">&#x22EF;</span>
   </div>
 </div>
 
 <div class="scroll" id="mainScroll">
 
-<!-- HOME -->
 <div class="pg on" id="pg-home">
   <div class="hero">
     <div style="font-size:11px;color:var(--dm)" id="heroDate"></div>
     <h2>각화중학교 현장체험학습<br>안전관리 시스템</h2>
-    <div class="sub">경주 역사유적지구 · 1박 2일</div>
+    <div class="sub">경주 역사유적지구 &#xB7; 1박 2일</div>
     <div class="stats-row">
       <div class="stat"><div class="stat-n" id="h-total">0</div><div class="stat-l">서명완료</div></div>
       <div class="stat"><div class="stat-n" style="color:var(--gr)" id="h-safe">0</div><div class="stat-l">안전구역</div></div>
@@ -167,51 +146,45 @@ select.iif option{background:var(--bg)}
   <div id="homeAlerts"></div>
   <div class="sec">빠른 실행</div>
   <div class="g2">
-    <div class="mc bl" onclick="goPage('chatbot')"><div class="ico">💬</div><div class="lbl">민원 챗봇</div><div class="sub2">AI 자동 답변</div></div>
-    <div class="mc rd" onclick="goPage('map')"><div class="ico">🗺️</div><div class="lbl">실시간 지도</div><div class="sub2">Vworld + 안전지도</div></div>
-    <div class="mc gr" onclick="goPage('db')"><div class="ico">📋</div><div class="lbl">학생 DB</div><div class="sub2">서명 현황 확인</div></div>
-    <div class="mc yw" onclick="showM('routeM')"><div class="ico">🛣️</div><div class="lbl">경로 분석</div><div class="sub2">교통사고 기반</div></div>
+    <div class="mc bl" onclick="goPage('chatbot')"><div class="ico">&#x1F4AC;</div><div class="lbl">민원 챗봇</div><div class="sub2">AI 자동 답변</div></div>
+    <div class="mc rd" onclick="goPage('map')"><div class="ico">&#x1F5FA;&#xFE0F;</div><div class="lbl">실시간 지도</div><div class="sub2">Vworld + 안전지도</div></div>
+    <div class="mc gr" onclick="goPage('db')"><div class="ico">&#x1F4CB;</div><div class="lbl">학생 DB</div><div class="sub2">서명 현황 확인</div></div>
+    <div class="mc yw" onclick="showM('routeM')"><div class="ico">&#x1F6E3;&#xFE0F;</div><div class="lbl">경로 분석</div><div class="sub2">교통사고 기반</div></div>
   </div>
   <div class="sec">최근 학생 현황</div>
   <div id="homeStudents"></div>
 </div>
 
-<!-- MAP -->
 <div class="pg" id="pg-map">
   <div class="sec">Vworld + 생활안전지도</div>
   <div class="card" style="margin-bottom:10px">
-    <div style="font-size:12px;font-weight:700;color:var(--dm);margin-bottom:8px">🔍 Vworld 장소 검색</div>
+    <div style="font-size:12px;font-weight:700;color:var(--dm);margin-bottom:8px">&#x1F50D; Vworld 장소 검색</div>
     <div style="display:flex;gap:7px;margin-bottom:6px">
-      <input class="iif" id="placeInput" placeholder="불국사, 석굴암, 첨성대..." style="flex:1;padding:9px 12px;font-size:13px"
-        onkeydown="if(event.key==='Enter') searchVworld()">
+      <input class="iif" id="placeInput" placeholder="불국사, 석굴암, 첨성대..." style="flex:1;padding:9px 12px;font-size:13px" onkeydown="if(event.key==='Enter') searchVworld()">
       <button class="btn btn-ac" style="width:auto;padding:0 14px;font-size:13px" onclick="searchVworld()">검색</button>
     </div>
     <div class="search-list" id="searchList"></div>
-    <div style="font-size:11px;color:var(--dm)">💡 검색 후 결과 선택 → 안전구역 자동 설정</div>
+    <div style="font-size:11px;color:var(--dm)">&#x1F4A1; 검색 후 결과 선택 &#x2192; 안전구역 자동 설정</div>
   </div>
   <div class="maptb">
-    <button class="tbtn" id="btnDraw" onclick="toggleDraw()">✏️ 구역 그리기</button>
-    <button class="tbtn" id="btnRZ" onclick="toggleRZMode()">🔴 레드존 추가</button>
-    <button class="tbtn" onclick="saveDrawnZone()">💾 구역 저장</button>
-    <button class="tbtn" onclick="clearAllZones()">🗑️ 초기화</button>
+    <button class="tbtn" id="btnDraw" onclick="toggleDraw()">&#x270F;&#xFE0F; 구역 그리기</button>
+    <button class="tbtn" id="btnRZ" onclick="toggleRZMode()">&#x1F534; 레드존 추가</button>
+    <button class="tbtn" onclick="saveDrawnZone()">&#x1F4BE; 구역 저장</button>
+    <button class="tbtn" onclick="clearAllZones()">&#x1F5D1;&#xFE0F; 초기화</button>
   </div>
-  <div style="font-size:11px;color:var(--dm);margin-bottom:5px">생활안전지도 레이어</div>
+  <div style="font-size:11px;color:var(--dm);margin-bottom:5px">생활안전지도 레이어 (레이어 ON시 레드존 자동 분석)</div>
   <div class="layer-row" id="layerRow"></div>
   <div class="zchips" id="zoneChips"></div>
-  <div id="mapLoading">
-    <div class="spin"></div>
-    <div style="font-size:13px;color:var(--dm)">지도 로딩 중...</div>
-  </div>
+  <div id="mapLoading"><div class="spin"></div><div style="font-size:13px;color:var(--dm)">지도 로딩 중...</div></div>
   <div id="vmap"></div>
   <div id="stagePanel"></div>
   <div class="strow">
-    <div class="stc"><div class="stn" style="color:var(--gr)" id="m-safe">0</div><div class="stl">🟢 안전</div></div>
-    <div class="stc"><div class="stn" style="color:var(--rd)" id="m-warn">0</div><div class="stl">🔴 이탈</div></div>
-    <div class="stc"><div class="stn" style="color:var(--dm)" id="m-off">0</div><div class="stl">⚫ 오프</div></div>
+    <div class="stc"><div class="stn" style="color:var(--gr)" id="m-safe">0</div><div class="stl">&#x1F7E2; 안전</div></div>
+    <div class="stc"><div class="stn" style="color:var(--rd)" id="m-warn">0</div><div class="stl">&#x1F534; 이탈</div></div>
+    <div class="stc"><div class="stn" style="color:var(--dm)" id="m-off">0</div><div class="stl">&#x26AB; 오프</div></div>
   </div>
 </div>
 
-<!-- CHATBOT -->
 <div class="pg" id="pg-chatbot">
   <div class="sec">민원 AI 상담 챗봇</div>
   <div class="chwrap">
@@ -225,15 +198,12 @@ select.iif option{background:var(--bg)}
       <button class="qb" onclick="qs('스마트폰 반납이 싫습니다')">스마트폰 반납</button>
     </div>
     <div style="display:flex;gap:8px;align-items:flex-end">
-      <textarea class="chin" id="chin" rows="1" placeholder="민원 내용 입력..."
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
-        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,90)+'px'"></textarea>
-      <button class="chsend" onclick="sendChat()">➤</button>
+      <textarea class="chin" id="chin" rows="1" placeholder="민원 내용 입력..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,90)+'px'"></textarea>
+      <button class="chsend" onclick="sendChat()">&#x27A4;</button>
     </div>
   </div>
 </div>
 
-<!-- DB -->
 <div class="pg" id="pg-db">
   <div class="sec">학생 안전교육 서명 DB</div>
   <div class="strow">
@@ -242,8 +212,8 @@ select.iif option{background:var(--bg)}
     <div class="stc"><div class="stn" style="color:var(--ac)" id="db-t">0</div><div class="stl">전체</div></div>
   </div>
   <div style="display:flex;gap:8px;margin-bottom:10px">
-    <button class="btn btn-ac" style="flex:1" onclick="refreshDB()">🔄 새로고침</button>
-    <button class="btn btn-s2" style="flex:1" onclick="exportCSV()">📥 CSV</button>
+    <button class="btn btn-ac" style="flex:1" onclick="refreshDB()">&#x1F504; 새로고침</button>
+    <button class="btn btn-s2" style="flex:1" onclick="exportCSV()">&#x1F4E5; CSV</button>
   </div>
   <div id="dbTable"></div>
   <div class="card" style="margin-top:10px">
@@ -260,57 +230,18 @@ select.iif option{background:var(--bg)}
   </div>
 </div>
 
-</div><!-- scroll end -->
+</div>
 
 <div class="bnav">
-  <div class="ni on" id="ni-home" onclick="goPage('home')"><div class="nico">🏠</div><div class="nlbl">홈</div></div>
-  <div class="ni" id="ni-map" onclick="goPage('map')">
-    <div class="nico">🗺️</div><div class="nlbl">지도</div>
-    <div class="nbadge" id="mapBadge" style="display:none">0</div>
-  </div>
-  <div class="ni" id="ni-chatbot" onclick="goPage('chatbot')"><div class="nico">💬</div><div class="nlbl">챗봇</div></div>
-  <div class="ni" id="ni-db" onclick="goPage('db')"><div class="nico">📋</div><div class="nlbl">학생DB</div></div>
+  <div class="ni on" id="ni-home" onclick="goPage('home')"><div class="nico">&#x1F3E0;</div><div class="nlbl">홈</div></div>
+  <div class="ni" id="ni-map" onclick="goPage('map')"><div class="nico">&#x1F5FA;&#xFE0F;</div><div class="nlbl">지도</div><div class="nbadge" id="mapBadge" style="display:none">0</div></div>
+  <div class="ni" id="ni-chatbot" onclick="goPage('chatbot')"><div class="nico">&#x1F4AC;</div><div class="nlbl">챗봇</div></div>
+  <div class="ni" id="ni-db" onclick="goPage('db')"><div class="nico">&#x1F4CB;</div><div class="nlbl">학생DB</div></div>
 </div>
 
-<!-- Modals -->
-<div class="mover" id="routeM">
-  <div class="msheet" style="position:relative">
-    <div class="mhandle"></div><button class="mclose" onclick="closeM('routeM')">✕</button>
-    <div class="mtitle">🛣️ AI 안전경로 분석</div>
-    <div id="routeC">
-      <div style="margin-bottom:12px"><div class="ilab">출발지</div><input class="iif" id="rS" value="광주 각화중학교"></div>
-      <div style="margin-bottom:12px"><div class="ilab">목적지</div><input class="iif" id="rE" value="경주 불국사"></div>
-      <div style="margin-bottom:12px"><div class="ilab">출발일시</div><input class="iif" type="datetime-local" id="rDT"></div>
-      <button class="btn btn-ac" onclick="runRoute()">AI 분석 시작</button>
-    </div>
-    <div id="routeR"></div>
-  </div>
-</div>
-
-<div class="mover" id="moreM">
-  <div class="msheet" style="position:relative">
-    <div class="mhandle"></div><button class="mclose" onclick="closeM('moreM')">✕</button>
-    <div class="mtitle">더보기</div>
-    <div style="display:flex;flex-direction:column;gap:7px">
-      <div class="sr" onclick="closeM('moreM');showM('routeM')"><span style="font-size:20px;margin-right:10px">🛣️</span>안전 경로 분석</div>
-      <div class="sr" onclick="closeM('moreM');shareStudentApp()"><span style="font-size:20px;margin-right:10px">📱</span>학생 앱 공유</div>
-    </div>
-  </div>
-</div>
-
-<div class="mover" id="emergM" style="z-index:300">
-  <div class="msheet" style="position:relative;text-align:center">
-    <div class="mhandle"></div>
-    <div style="font-size:50px;margin:8px 0">🚨</div>
-    <div class="mtitle" style="color:var(--rd);text-align:center">119 자동 신고 대기</div>
-    <div style="font-size:13px;color:var(--dm);margin-bottom:16px;line-height:1.7" id="emergDesc"></div>
-    <div style="font-size:26px;font-weight:900;color:var(--rd);margin:6px 0" id="emergCD">10</div>
-    <div class="cbar" style="margin-bottom:18px"><div class="cfill" id="emergBar" style="width:100%"></div></div>
-    <button class="btn btn-gr" style="margin-bottom:8px" onclick="confirmEmerg()">✅ 교사 확인 — 신고 취소</button>
-    <button class="btn btn-rd" onclick="force119()">📞 즉시 119 신고</button>
-  </div>
-</div>
-
+<div class="mover" id="routeM"><div class="msheet" style="position:relative"><div class="mhandle"></div><button class="mclose" onclick="closeM('routeM')">&#x2715;</button><div class="mtitle">&#x1F6E3;&#xFE0F; AI 안전경로 분석</div><div id="routeC"><div style="margin-bottom:12px"><div class="ilab">출발지</div><input class="iif" id="rS" value="광주 각화중학교"></div><div style="margin-bottom:12px"><div class="ilab">목적지</div><input class="iif" id="rE" value="경주 불국사"></div><div style="margin-bottom:12px"><div class="ilab">출발일시</div><input class="iif" type="datetime-local" id="rDT"></div><button class="btn btn-ac" onclick="runRoute()">AI 분석 시작</button></div><div id="routeR"></div></div></div>
+<div class="mover" id="moreM"><div class="msheet" style="position:relative"><div class="mhandle"></div><button class="mclose" onclick="closeM('moreM')">&#x2715;</button><div class="mtitle">더보기</div><div style="display:flex;flex-direction:column;gap:7px"><div class="sr" onclick="closeM('moreM');showM('routeM')"><span style="font-size:20px;margin-right:10px">&#x1F6E3;&#xFE0F;</span>안전 경로 분석</div><div class="sr" onclick="closeM('moreM');shareStudentApp()"><span style="font-size:20px;margin-right:10px">&#x1F4F1;</span>학생 앱 공유</div></div></div></div>
+<div class="mover" id="emergM" style="z-index:300"><div class="msheet" style="position:relative;text-align:center"><div class="mhandle"></div><div style="font-size:50px;margin:8px 0">&#x1F6A8;</div><div class="mtitle" style="color:var(--rd);text-align:center">119 자동 신고 대기</div><div style="font-size:13px;color:var(--dm);margin-bottom:16px;line-height:1.7" id="emergDesc"></div><div style="font-size:26px;font-weight:900;color:var(--rd);margin:6px 0" id="emergCD">10</div><div class="cbar" style="margin-bottom:18px"><div class="cfill" id="emergBar" style="width:100%"></div></div><button class="btn btn-gr" style="margin-bottom:8px" onclick="confirmEmerg()">&#x2705; 교사 확인 &#x2014; 신고 취소</button><button class="btn btn-rd" onclick="force119()">&#x1F4DE; 즉시 119 신고</button></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -318,25 +249,34 @@ var VWORLD_KEY  = '4A7A510F-5D29-3136-9B47-004FCD5B1B94';
 var SAFEMAP_KEY = '6UV6B0TJ-6UV6-6UV6-6UV6-6UV6B0TJPT';
 var DB_KEY      = 'fieldtrip_students_v2';
 var ZONE_KEY    = 'fieldtrip_zones_v2';
+var SAFEMAP_BASE = 'https://www.safemap.go.kr/openapi2/';
+var SCHOOL_RULES = '[각화중학교 2026 현장체험학습 규정]\n1. 방/버스 배정: AI 공정 배정, 개인 변경 불가\n2. 스마트폰: 도착 후 담임 보관\n3. 안전: GPS 추적, 구역 이탈 즉시 경보, 3단계 자동신고\n4. 불참: 7일 전 서면 신청';
 
-// 생활안전지도 레이어 (objtId=205: IF_0087, objtId=173: IF_0020)
+// 생활안전지도 레이어
+// objtId=205 범죄주의구간: IF_0087 (대문자 파라미터 필요 → 직접 URL 생성)
+// objtId=173 추락낙상사고: IF_0020 (소문자도 OK)
 var SAFETY_LAYERS = [
-  { id:'crime', wmsUrl:'https://www.safemap.go.kr/openapi2/IF_0087_WMS?serviceKey=' + SAFEMAP_KEY,
-    layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All', label:'\uD83D\uDEA8 범죄주의구간', color:'#f85149' },
-  { id:'fall',  wmsUrl:'https://www.safemap.go.kr/openapi2/IF_0020_WMS?serviceKey=' + SAFEMAP_KEY,
-    layer:'A2SM_CRASHACDNTSTTUS', style:'A2SM_CrashAcdntSttus', label:'\u26A0\uFE0F 추락낙상사고', color:'#ffd93d' }
+  { id:'crime', intId:'IF_0087', layer:'A2SM_CRMNLHSPOT_TOT',  style:'A2SM_CrmnlHspot_Tot_All', label:'범죄주의구간', color:'#f85149' },
+  { id:'fall',  intId:'IF_0020', layer:'A2SM_CRASHACDNTSTTUS', style:'A2SM_CrashAcdntSttus',    label:'추락낙상사고', color:'#ffd93d' }
 ];
 
-var SCHOOL_RULES = '[각화중학교 2026 현장체험학습 규정]\n1. 방/버스 배정: AI 공정 배정, 개인 사유 변경 불가\n2. 스마트폰: 도착 후 담임 보관\n3. 안전: GPS 추적, 구역 이탈 즉시 경보, 3단계 자동신고\n4. 불참: 7일 전 서면 신청';
+// 대문자 파라미터로 WMS 타일 URL 직접 생성 (IF_0087 400 해결)
+function safemapTileUrl(lyr, bbox, w, h) {
+  return SAFEMAP_BASE + lyr.intId + '_WMS'
+    + '?serviceKey=' + SAFEMAP_KEY
+    + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap'
+    + '&LAYERS=' + lyr.layer + '&STYLES=' + lyr.style
+    + '&FORMAT=image%2Fpng&TRANSPARENT=TRUE'
+    + '&SRS=EPSG%3A3857'
+    + '&BBOX=' + bbox + '&WIDTH=' + w + '&HEIGHT=' + h;
+}
 
-// ── 지도 변수
 var map = null, mapReady = false;
 var safeZones = [], redzones = [], studentMarkers = {};
 var wmsLayers = {}, activeLayers = {};
 var drawMode = false, rzMode = false, drawPoints = [], tempPolyline = null, tempDots = [];
 var alertTimers = {}, e119t;
 
-// ── Leaflet 동적 로드
 var _leafletReady = false, _leafletQueue = [];
 function loadLeaflet(cb) {
   if (_leafletReady && window.L) { cb(); return; }
@@ -347,41 +287,52 @@ function loadLeaflet(cb) {
   css.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
   document.head.appendChild(css);
   function tryLoad(urls, i) {
-    if (i >= urls.length) { showMapError('지도 라이브러리 로드 실패. 인터넷 확인 후 새로고침 해주세요.'); return; }
+    if (i >= urls.length) { showMapError('지도 라이브러리 로드 실패'); return; }
     var s = document.createElement('script');
     s.src = urls[i];
-    s.onload = function() { if (window.L) { _leafletReady = true; _leafletQueue.forEach(function(fn){fn();}); _leafletQueue = []; } else tryLoad(urls, i+1); };
+    s.onload = function() {
+      if (window.L) { _leafletReady = true; _leafletQueue.forEach(function(fn){fn();}); _leafletQueue = []; }
+      else tryLoad(urls, i+1);
+    };
     s.onerror = function() { tryLoad(urls, i+1); };
     document.head.appendChild(s);
   }
   tryLoad(['https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'], 0);
 }
 
-// ── 지도 초기화
 function initMap() {
   if (mapReady && map) { setTimeout(function(){ if(map) map.invalidateSize(); }, 200); return; }
   loadLeaflet(function() {
-    var loadingEl = document.getElementById('mapLoading');
-    var mapEl = document.getElementById('vmap');
-    var avail = document.getElementById('mainScroll').clientHeight;
+    var loadEl = document.getElementById('mapLoading');
+    var mapEl  = document.getElementById('vmap');
+    var avail  = document.getElementById('mainScroll').clientHeight;
     mapEl.style.height = Math.max(260, avail - 360) + 'px';
     mapEl.style.display = 'block';
-    if (loadingEl) loadingEl.style.display = 'none';
+    if (loadEl) loadEl.style.display = 'none';
 
-    map = L.map('vmap', { center:[35.7901,129.3318], zoom:15, zoomControl:true, attributionControl:true });
+    map = L.map('vmap', { center:[35.7901,129.3318], zoom:15, zoomControl:true });
 
-    // OSM 고정 (단일 타일)
+    // OSM 고정
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom:19, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      maxZoom:19, attribution:'&copy; OpenStreetMap'
     }).addTo(map);
 
-    // 생활안전지도 WMS 레이어
+    // 생활안전지도 WMS: L.TileLayer extend로 대문자 파라미터 직접 생성
     SAFETY_LAYERS.forEach(function(lyr) {
-      wmsLayers[lyr.id] = L.tileLayer.wms(lyr.wmsUrl, {
-        layers:lyr.layer, styles:lyr.style, format:'image/png',
-        transparent:true, version:'1.1.1', crs:L.CRS.EPSG3857,
-        tileSize:512, opacity:0.85, zIndex:10, attribution:'© 생활안전지도',
-        uppercase:true
+      var SafemapLayer = L.TileLayer.extend({
+        getTileUrl: function(coords) {
+          var tb = this._tileCoordsToBounds(coords);
+          var sw = map.options.crs.project(tb.getSouthWest());
+          var ne = map.options.crs.project(tb.getNorthEast());
+          var bbox = sw.x + ',' + sw.y + ',' + ne.x + ',' + ne.y;
+          var sz = this.getTileSize();
+          return safemapTileUrl(lyr, bbox, sz.x, sz.y);
+        }
+      });
+      wmsLayers[lyr.id] = new SafemapLayer('', {
+        tileSize:512, opacity:0.85, zIndex:10,
+        attribution:'&copy; 생활안전지도',
+        crossOrigin:'anonymous'
       });
       wmsLayers[lyr.id].on('tileerror', (function(l){
         return function() {
@@ -391,20 +342,28 @@ function initMap() {
             if (btn) { btn.classList.remove('on'); btn.style.background=''; btn.style.color=''; }
             delete activeLayers[l.id];
             try { map.removeLayer(wmsLayers[l.id]); } catch(e){}
-            showToast(l.label + ' 로드 실패 (서버 오류). 잠시 후 다시 시도하세요.', 'danger');
+            showToast(l.label + ' 로드 실패. 잠시 후 다시 시도하세요.', 'danger');
           }
         };
       })(lyr).bind(wmsLayers[lyr.id]));
+
+      // 타일 로드 성공 시 캔버스 분석으로 레드존 자동 지정
+      wmsLayers[lyr.id].on('tileload', (function(l){
+        return function(e) {
+          if (!activeLayers[l.id]) return;
+          analyzeTileForRedzone(e.tile, e.coords, l);
+        };
+      })(lyr));
     });
 
-    // 레이어 토글 버튼 생성
+    // 레이어 버튼 생성
     var lr = document.getElementById('layerRow');
     if (lr) {
       SAFETY_LAYERS.forEach(function(lyr) {
         var btn = document.createElement('button');
-        btn.className = 'lbtn';
-        btn.id = 'lbtn-' + lyr.id;
-        btn.textContent = lyr.label;
+        btn.className = 'lbtn'; btn.id = 'lbtn-' + lyr.id;
+        btn.textContent = (lyr.id === 'crime' ? '&#x1F6A8; ' : '&#x26A0;&#xFE0F; ') + lyr.label;
+        btn.innerHTML = (lyr.id === 'crime' ? '&#x1F6A8; ' : '&#x26A0;&#xFE0F; ') + lyr.label;
         btn.style.borderColor = lyr.color;
         btn.onclick = function() { toggleSafetyLayer(lyr.id, lyr.color, btn); };
         lr.appendChild(btn);
@@ -423,10 +382,57 @@ function initMap() {
 
 function showMapError(msg) {
   var el = document.getElementById('mapLoading');
-  if (el) el.innerHTML = '<div style="font-size:36px">⚠️</div><div style="font-size:13px;color:var(--rd);text-align:center">' + msg + '</div><button class="btn btn-ac" style="width:auto;padding:10px 18px;margin-top:8px" onclick="location.reload()">새로고침</button>';
+  if (el) el.innerHTML = '<div style="font-size:36px">&#x26A0;&#xFE0F;</div><div style="font-size:13px;color:var(--rd)">' + msg + '</div><button class="btn btn-ac" style="width:auto;padding:10px 18px;margin-top:8px" onclick="location.reload()">새로고침</button>';
 }
 
-// ── 생활안전지도 레이어 토글
+// ── WMS 타일 이미지 픽셀 분석 → 레드존 자동 지정
+// crossOrigin:anonymous 로 타일 로드 시 Canvas에 그려서 픽셀 분석 가능
+var _analyzedTiles = {};
+function analyzeTileForRedzone(img, coords, lyr) {
+  var key = lyr.id + '_' + coords.z + '_' + coords.x + '_' + coords.y;
+  if (_analyzedTiles[key]) return;
+  _analyzedTiles[key] = true;
+
+  try {
+    var canvas = document.createElement('canvas');
+    canvas.width = img.width || 512;
+    canvas.height = img.height || 512;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    var data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    var hotPixels = 0, totalPixels = canvas.width * canvas.height;
+    for (var i = 0; i < data.length; i += 4) {
+      var r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+      if (a < 10) continue; // 투명 픽셀 제외
+      // 범죄: 빨강/주황 히트맵 픽셀 감지 (r > 180, g < 120, b < 80)
+      // 낙상: 파란/청록 마커 픽셀 감지 (b > 150, r < 100)
+      if (lyr.id === 'crime' && r > 180 && g < 120 && b < 80) hotPixels++;
+      if (lyr.id === 'fall'  && b > 150 && r < 100) hotPixels++;
+    }
+
+    var hotRatio = hotPixels / totalPixels;
+    // 위험 픽셀 비율이 0.5% 이상이면 레드존 추가
+    if (hotRatio > 0.005) {
+      // 타일 좌표 → 지리 좌표 변환
+      var tb = map.options.crs.unproject;
+      var tileBounds = wmsLayers[lyr.id]._tileCoordsToBounds(coords);
+      var center = tileBounds.getCenter();
+      var radius = lyr.id === 'crime' ? 150 : 50;
+
+      var dup = redzones.some(function(r) {
+        var dx=(r.lat-center.lat)*111000, dy=(r.lng-center.lng)*111000*Math.cos(center.lat*Math.PI/180);
+        return Math.sqrt(dx*dx+dy*dy) < radius * 1.5;
+      });
+      if (!dup) {
+        addRedzoneCircle(center.lat, center.lng, lyr.label + ' 위험지점', lyr.id, lyr.color, radius, true);
+      }
+    }
+  } catch(e) {
+    // CORS 등으로 캔버스 분석 실패 시 조용히 무시
+  }
+}
+
 function toggleSafetyLayer(id, color, btn) {
   if (!mapReady) { showToast('먼저 지도 탭을 열어주세요'); return; }
   var lyr = SAFETY_LAYERS.find(function(l){ return l.id===id; });
@@ -437,88 +443,14 @@ function toggleSafetyLayer(id, color, btn) {
     showToast(lyr.label + ' 레이어 OFF');
   } else {
     wmsLayers[id]._errShown = false;
+    _analyzedTiles = {}; // 재분석 허용
     wmsLayers[id].addTo(map);
     activeLayers[id] = true;
     btn.classList.add('on'); btn.style.background=color; btn.style.color=(color==='#ffd93d')?'#111':'#fff';
-    showToast(lyr.label + ' ON — 레드존 자동 분석 중...');
-    setTimeout(function(){ autoRedzoneFromWMS(lyr); }, 1500);
+    showToast(lyr.label + ' ON - 위험지점 자동 분석 중...');
   }
 }
 
-// ── 생활안전지도 WMS → 레드존 자동 지정
-// 범죄: GetFeatureInfo 픽셀 밀도 분석 → 고밀도 지점 레드존
-// 낙상: GetFeatureInfo 포인트 수집 → 밀집 클러스터 레드존
-function autoRedzoneFromWMS(lyr) {
-  if (!map || !mapReady) return;
-  var bounds = map.getBounds();
-  var size   = map.getSize();
-  var sw = map.options.crs.project(bounds.getSouthWest());
-  var ne = map.options.crs.project(bounds.getNorthEast());
-  var bbox = sw.x + ',' + sw.y + ',' + ne.x + ',' + ne.y;
-
-  // GetFeatureInfo 요청: 지도를 격자로 나눠 여러 지점 조회
-  var gridN = 4; // 4x4 = 16개 지점 조회
-  var added = 0;
-  var pending = 0;
-  var colorMap = { crime:'#f85149', fall:'#ffd93d' };
-  var radiusMap = { crime:120, fall:40 };
-
-  for (var gi = 0; gi < gridN; gi++) {
-    for (var gj = 0; gj < gridN; gj++) {
-      (function(pi, pj) {
-        var px = Math.round(size.x * (pi + 0.5) / gridN);
-        var py = Math.round(size.y * (pj + 0.5) / gridN);
-        var featureUrl = lyr.wmsUrl
-          + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo'
-          + '&LAYERS=' + lyr.layer
-          + '&QUERY_LAYERS=' + lyr.layer
-          + '&INFO_FORMAT=application%2Fjson'
-          + '&FEATURE_COUNT=10'
-          + '&SRS=EPSG%3A3857'
-          + '&BBOX=' + bbox
-          + '&WIDTH=' + size.x + '&HEIGHT=' + size.y
-          + '&X=' + px + '&Y=' + py;
-
-        pending++;
-        fetch(featureUrl)
-          .then(function(r) { return r.text(); })
-          .then(function(text) {
-            pending--;
-            if (!text || text.trim().startsWith('<')) return;
-            try {
-              var json = JSON.parse(text);
-              var features = json.features || [];
-              features.forEach(function(f) {
-                var g = f.geometry;
-                if (!g) return;
-                var lat, lng;
-                if (g.type === 'Point') { lng = g.coordinates[0]; lat = g.coordinates[1]; }
-                else if (g.type === 'MultiPoint') { lng = g.coordinates[0][0]; lat = g.coordinates[0][1]; }
-                else return;
-                if (!lat || !lng || lat < 33 || lat > 39) return;
-                var dup = redzones.some(function(r) {
-                  var dx=(r.lat-lat)*111000, dy=(r.lng-lng)*111000*Math.cos(lat*Math.PI/180);
-                  return Math.sqrt(dx*dx+dy*dy) < radiusMap[lyr.id] * 2;
-                });
-                if (!dup) {
-                  addRedzoneCircle(lat, lng, lyr.label + ' 위험지점', lyr.id, colorMap[lyr.id], radiusMap[lyr.id], true);
-                  added++;
-                }
-              });
-              if (pending === 0 && added > 0) {
-                showToast('✅ ' + lyr.label + ' 레드존 ' + added + '개 자동 추가!');
-              } else if (pending === 0) {
-                showToast(lyr.label + ' — 현재 화면 범위 내 위험지점 없음');
-              }
-            } catch(e) { /* JSON 파싱 실패 무시 */ }
-          })
-          .catch(function() { pending--; });
-      })(gi, gj);
-    }
-  }
-}
-
-// ── 폴리곤 그리기
 function onMapClick(e) {
   if (rzMode) { addRedzoneAt(e.latlng.lat, e.latlng.lng); return; }
   if (!drawMode) return;
@@ -527,7 +459,7 @@ function onMapClick(e) {
   tempDots.push(dot);
   if (tempPolyline) map.removeLayer(tempPolyline);
   if (drawPoints.length > 1) tempPolyline = L.polyline(drawPoints,{color:'#d29922',weight:2,dashArray:'5,5'}).addTo(map);
-  showToast('점 ' + drawPoints.length + '개 — 완료 후 "구역 저장" 버튼');
+  showToast(drawPoints.length + '개 - 완료 후 구역 저장 버튼');
 }
 
 function toggleDraw() {
@@ -535,35 +467,35 @@ function toggleDraw() {
   document.getElementById('btnRZ').classList.remove('rz-on');
   var btn = document.getElementById('btnDraw');
   btn.classList.toggle('draw-on', drawMode);
-  btn.textContent = drawMode ? '✏️ 그리는 중...' : '✏️ 구역 그리기';
-  if (drawMode) showToast('지도를 탭하여 구역 꼭짓점을 추가하세요 (3개 이상)');
+  btn.textContent = drawMode ? '그리는 중...' : '&#x270F;&#xFE0F; 구역 그리기';
+  btn.innerHTML = drawMode ? '&#x270F;&#xFE0F; 그리는 중...' : '&#x270F;&#xFE0F; 구역 그리기';
+  if (drawMode) showToast('지도를 탭하여 구역 꼭짓점 추가 (3개 이상)');
 }
 
 function toggleRZMode() {
   rzMode = !rzMode; drawMode = false;
   document.getElementById('btnDraw').classList.remove('draw-on');
-  document.getElementById('btnDraw').textContent = '✏️ 구역 그리기';
+  document.getElementById('btnDraw').innerHTML = '&#x270F;&#xFE0F; 구역 그리기';
   document.getElementById('btnRZ').classList.toggle('rz-on', rzMode);
-  if (rzMode) showToast('🔴 지도를 탭하여 레드존 위치를 선택하세요');
+  if (rzMode) showToast('지도를 탭하여 레드존 위치를 선택하세요');
 }
 
 function addRedzoneAt(lat, lng) {
   rzMode = false;
   document.getElementById('btnRZ').classList.remove('rz-on');
   var name = prompt('레드존 이름:', '위험구역') || '위험구역';
-  var types = ['\uD83D\uDEA8 범죄우려', '\u26A0\uFE0F 낙상추락', '\uD83C\uDF0A 익사위험', '\uD83D\uDD34 기타위험'];
-  var sel = parseInt(prompt('위험 유형:\n1.' + types[0] + '\n2.' + types[1] + '\n3.' + types[2] + '\n4.' + types[3] + '\n번호 입력:', '1') || '1') - 1;
-  var type = types[sel] || types[3];
+  var types = ['범죄우려', '낙상추락', '익사위험', '기타위험'];
+  var sel = parseInt(prompt('1.범죄우려  2.낙상추락  3.익사위험  4.기타위험
+번호 입력:', '1') || '1') - 1;
   var r = parseInt(prompt('반경 (m):', '50') || '50');
-  var colors = {0:'#f85149', 1:'#ffd93d', 2:'#4fc3f7', 3:'#f85149'};
-  var col = colors[sel] || '#f85149';
-  addRedzoneCircle(lat, lng, name, type, col, r, false);
+  var cols = ['#f85149','#ffd93d','#4fc3f7','#f85149'];
+  addRedzoneCircle(lat, lng, name, types[sel]||types[3], cols[sel]||cols[3], r, false);
 }
 
 function addRedzoneCircle(lat, lng, name, type, color, radius, auto) {
   var c = L.circle([lat,lng],{radius:radius,color:color,weight:2,fillColor:color,fillOpacity:0.3})
     .bindPopup('<b>' + name + '</b><br>' + (auto ? '자동감지' : '교사설정') + '<br>반경 ' + radius + 'm').addTo(map);
-  var id = 'rz_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+  var id = 'rz_' + Date.now() + '_' + Math.floor(Math.random()*1000);
   redzones.push({id:id,lat:lat,lng:lng,name:name,type:type,color:color,radius:radius});
   saveZones(); renderZoneChips();
 }
@@ -571,35 +503,37 @@ function addRedzoneCircle(lat, lng, name, type, color, radius, auto) {
 function saveDrawnZone() {
   if (drawPoints.length < 3) { showToast('3개 이상 점을 찍어야 합니다'); return; }
   var name = prompt('안전구역 이름:', '탐방 안전구역') || '안전구역';
-  tempDots.forEach(function(d){ try{map.removeLayer(d);}catch(e){} }); tempDots = [];
+  tempDots.forEach(function(d){ try{map.removeLayer(d);}catch(e){}; }); tempDots = [];
   if (tempPolyline) { try{map.removeLayer(tempPolyline);}catch(e){} tempPolyline = null; }
   drawMode = false;
   document.getElementById('btnDraw').classList.remove('draw-on');
-  document.getElementById('btnDraw').textContent = '✏️ 구역 그리기';
+  document.getElementById('btnDraw').innerHTML = '&#x270F;&#xFE0F; 구역 그리기';
   var pts = drawPoints.slice(); drawPoints = [];
   var layer = L.polygon(pts,{color:'#3fb950',weight:2,fillColor:'#3fb950',fillOpacity:.12})
-    .bindPopup('✅ 안전구역: ' + name).addTo(map);
+    .bindPopup('안전구역: ' + name).addTo(map);
   safeZones.push({id:'zone_'+Date.now(), name:name, latlngs:pts, layer:layer});
-  saveZones(); renderZoneChips();
-  map.fitBounds(layer.getBounds());
-  showToast('✅ "' + name + '" 안전구역 저장 완료');
+  saveZones(); renderZoneChips(); map.fitBounds(layer.getBounds());
+  showToast('"' + name + '" 안전구역 저장 완료');
 }
 
 function clearAllZones() {
   if (!confirm('모든 구역을 삭제하시겠습니까?')) return;
   safeZones.forEach(function(z){ try{map.removeLayer(z.layer);}catch(e){}; });
-  map.eachLayer(function(l){ if(l instanceof L.Circle) { try{map.removeLayer(l);}catch(e){} } });
+  map.eachLayer(function(l){ if(l instanceof L.Circle){try{map.removeLayer(l);}catch(e){}} });
   safeZones=[]; redzones=[]; drawPoints=[];
   tempDots.forEach(function(d){ try{map.removeLayer(d);}catch(e){}; }); tempDots=[];
   if (tempPolyline) { try{map.removeLayer(tempPolyline);}catch(e){} tempPolyline=null; }
+  _analyzedTiles = {};
   saveZones(); renderZoneChips(); showToast('구역 초기화 완료');
 }
 
 function saveZones() {
-  try { localStorage.setItem(ZONE_KEY, JSON.stringify({
-    safeZones: safeZones.map(function(z){ return {id:z.id,name:z.name,latlngs:z.latlngs}; }),
-    redzones:  redzones.map(function(r){ return {id:r.id,lat:r.lat,lng:r.lng,name:r.name,type:r.type,color:r.color,radius:r.radius}; })
-  })); } catch(e){}
+  try {
+    localStorage.setItem(ZONE_KEY, JSON.stringify({
+      safeZones: safeZones.map(function(z){ return {id:z.id,name:z.name,latlngs:z.latlngs}; }),
+      redzones:  redzones.map(function(r){ return {id:r.id,lat:r.lat,lng:r.lng,name:r.name,type:r.type,color:r.color,radius:r.radius}; })
+    }));
+  } catch(e){}
 }
 
 function restoreZones() {
@@ -607,7 +541,7 @@ function restoreZones() {
     var data = JSON.parse(localStorage.getItem(ZONE_KEY) || '{}');
     (data.safeZones||[]).forEach(function(z) {
       var layer = L.polygon(z.latlngs,{color:'#3fb950',weight:2,fillColor:'#3fb950',fillOpacity:.12})
-        .bindPopup('✅ 안전구역: ' + z.name).addTo(map);
+        .bindPopup('안전구역: ' + z.name).addTo(map);
       safeZones.push(Object.assign({},z,{layer:layer}));
     });
     (data.redzones||[]).forEach(function(r) {
@@ -622,51 +556,28 @@ function restoreZones() {
 
 function renderZoneChips() {
   var el = document.getElementById('zoneChips'); if (!el) return;
-  var chips = safeZones.map(function(z){ return '<span class="zchip">✅ ' + z.name + '</span>'; })
-    .concat(redzones.map(function(r){ return '<span class="zchip" style="border-color:' + (r.color||'#f85149') + '">\uD83D\uDD34 ' + r.name + '</span>'; })).join('');
-  el.innerHTML = chips || '<span style="font-size:11px;color:var(--dm)">구역 없음 — 그리기로 추가</span>';
+  var chips = safeZones.map(function(z){ return '<span class="zchip">&#x2705; ' + z.name + '</span>'; })
+    .concat(redzones.map(function(r){ return '<span class="zchip" style="border-color:' + (r.color||'#f85149') + '">&#x1F534; ' + r.name + '</span>'; })).join('');
+  el.innerHTML = chips || '<span style="font-size:11px;color:var(--dm)">구역 없음</span>';
 }
 
-// ── 장소 검색
 function searchVworld() {
   var q = document.getElementById('placeInput').value.trim();
   if (!q) { showToast('검색어를 입력하세요'); return; }
   var listEl = document.getElementById('searchList');
   listEl.style.display = 'block';
   listEl.innerHTML = '<div style="padding:12px;text-align:center;font-size:13px;color:var(--dm)">검색 중...</div>';
-
-  // Vworld 시도 (CORS 허용된 경우)
-  var vUrl = 'https://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=epsg:4326&size=10&page=1&type=place&format=json&errorformat=json&query=' + encodeURIComponent(q) + '&key=' + VWORLD_KEY;
-
-  var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  if (ctrl) setTimeout(function(){ ctrl.abort(); }, 4000);
-  var fetchOpts = ctrl ? {signal: ctrl.signal} : {};
-
-  fetch(vUrl, fetchOpts)
-    .then(function(res){ return res.json(); })
-    .then(function(data) {
-      if (data.response && data.response.status === 'OK' && data.response.result && data.response.result.items && data.response.result.items.length) {
-        var items = data.response.result.items.map(function(it){
-          return { name:it.title, addr:(it.address&&(it.address.road||it.address.parcel))||'', lat:parseFloat(it.point&&it.point.y), lng:parseFloat(it.point&&it.point.x), source:'vworld' };
-        });
-        renderSearchResults(items, listEl);
-      } else {
-        throw new Error('no results');
-      }
-    })
-    .catch(function() {
-      // Nominatim 폴백
-      searchNominatim(q, listEl);
-    });
+  // Vworld CORS 차단 → 바로 Nominatim 사용 (에러 없이)
+  searchNominatim(q, listEl);
 }
 
 function searchNominatim(q, listEl) {
   fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q + ' 경주 대한민국') + '&format=json&limit=8&accept-language=ko', {headers:{'User-Agent':'FieldTripApp/1.0'}})
-    .then(function(res){ return res.json(); })
+    .then(function(r){ return r.json(); })
     .then(function(data) {
       if (!data.length) { listEl.innerHTML = '<div style="padding:12px;font-size:13px;color:var(--dm);text-align:center">검색 결과 없음</div>'; return; }
       var items = data.map(function(it){
-        return { name:it.display_name.split(',')[0], addr:it.display_name.split(',').slice(1,3).join(',').trim(), lat:parseFloat(it.lat), lng:parseFloat(it.lon), source:'osm' };
+        return { name:it.display_name.split(',')[0], addr:it.display_name.split(',').slice(1,3).join(',').trim(), lat:parseFloat(it.lat), lng:parseFloat(it.lon) };
       });
       renderSearchResults(items, listEl);
     })
@@ -676,11 +587,8 @@ function searchNominatim(q, listEl) {
 var _searchResults = [];
 function renderSearchResults(items, listEl) {
   _searchResults = items;
-  if (!items.length) { listEl.innerHTML = '<div style="padding:12px;font-size:13px;color:var(--dm);text-align:center">검색 결과 없음</div>'; return; }
   listEl.innerHTML = items.map(function(it, i){
-    return '<div class="search-item" onclick="selectSearchResult(' + i + ')">' +
-      '<div class="si-name">' + it.name + '</div>' +
-      '<div class="si-addr">' + (it.addr||'') + '</div></div>';
+    return '<div class="search-item" onclick="selectSearchResult(' + i + ')"><div class="si-name">' + it.name + '</div><div class="si-addr">' + (it.addr||'') + '</div></div>';
   }).join('');
   if (mapReady && map && items[0] && items[0].lat) map.setView([items[0].lat, items[0].lng], 16);
 }
@@ -688,33 +596,33 @@ function renderSearchResults(items, listEl) {
 function selectSearchResult(idx) {
   var item = _searchResults[idx]; if (!item) return;
   document.getElementById('searchList').style.display = 'none';
-  if (!mapReady) { initMap(); setTimeout(function(){ doSelectResult(item); }, 1500); return; }
+  if (!mapReady) { initMap(); setTimeout(function(){ doSelectResult(item); }, 1800); return; }
   doSelectResult(item);
 }
 
 function doSelectResult(item) {
   map.setView([item.lat, item.lng], 17);
-  showToast('"' + item.name + '" 위치로 이동. Overpass API로 경계 조회 중...');
+  showToast('"' + item.name + '" 이동. 경계 조회 중...');
   fetchPlacePolygon(item.lat, item.lng, item.name);
 }
 
 function fetchPlacePolygon(lat, lng, name) {
   var delta = 0.008;
-  var bbox = (lat-delta) + ',' + (lng-delta) + ',' + (lat+delta) + ',' + (lng+delta);
-  var query = '[out:json][timeout:10];(way["tourism"~"attraction|theme_park|museum"]('+bbox+');way["historic"~"monument|castle|ruins|temple|shrine"]('+bbox+');way["leisure"~"park|garden"]('+bbox+');relation["tourism"~"attraction"]('+bbox+');relation["historic"]('+bbox+'););out geom;';
-  fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:query,headers:{'Content-Type':'text/plain'}})
+  var bbox = (lat-delta)+','+(lng-delta)+','+(lat+delta)+','+(lng+delta);
+  var q = '[out:json][timeout:10];(way["tourism"~"attraction|theme_park|museum"]('+bbox+');way["historic"~"monument|castle|ruins|temple|shrine"]('+bbox+');way["leisure"~"park|garden"]('+bbox+');relation["tourism"~"attraction"]('+bbox+');relation["historic"]('+bbox+'););out geom;';
+  fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q,headers:{'Content-Type':'text/plain'}})
     .then(function(r){ return r.json(); })
     .then(function(data) {
-      var elements = data.elements||[];
-      if (!elements.length) { addDefaultCircle(lat, lng, name); return; }
+      var els = data.elements||[];
+      if (!els.length) { addDefaultCircle(lat,lng,name); return; }
       var best=null, bestDist=Infinity;
-      elements.forEach(function(el) {
-        var elLat=0, elLng=0, pts=[];
-        if (el.type==='way' && el.geometry&&el.geometry.length) pts=el.geometry;
+      els.forEach(function(el) {
+        var pts=[];
+        if (el.type==='way'&&el.geometry&&el.geometry.length) pts=el.geometry;
         else if (el.type==='relation'&&el.members) pts=el.members.flatMap(function(m){return m.geometry||[];});
         if (!pts.length) return;
-        elLat=pts.reduce(function(s,p){return s+p.lat;},0)/pts.length;
-        elLng=pts.reduce(function(s,p){return s+p.lon;},0)/pts.length;
+        var elLat=pts.reduce(function(s,p){return s+p.lat;},0)/pts.length;
+        var elLng=pts.reduce(function(s,p){return s+p.lon;},0)/pts.length;
         var d=Math.hypot(elLat-lat,elLng-lng);
         if(d<bestDist){bestDist=d;best=el;}
       });
@@ -726,241 +634,93 @@ function fetchPlacePolygon(lat, lng, name) {
         if (outer) latlngs=outer.geometry.map(function(p){return[p.lat,p.lon];});
       }
       if (latlngs.length>=3) {
-        var layer=L.polygon(latlngs,{color:'#3fb950',weight:2,fillColor:'#3fb950',fillOpacity:.12}).bindPopup('✅ 안전구역: '+name).addTo(map);
+        var layer=L.polygon(latlngs,{color:'#3fb950',weight:2,fillColor:'#3fb950',fillOpacity:.12}).bindPopup('안전구역: '+name).addTo(map);
         safeZones.push({id:'zone_'+Date.now(),name:name,latlngs:latlngs,layer:layer});
         saveZones(); renderZoneChips(); map.fitBounds(layer.getBounds());
-        showToast('✅ "' + name + '" 실제 경계로 안전구역 설정 완료!');
+        showToast('"' + name + '" 경계로 안전구역 설정 완료!');
       } else { addDefaultCircle(lat,lng,name); }
     })
     .catch(function(){ addDefaultCircle(lat,lng,name); });
 }
 
 function addDefaultCircle(lat, lng, name) {
-  L.circle([lat,lng],{radius:400,color:'#58a6ff',weight:1,fillColor:'#58a6ff',fillOpacity:.06,dashArray:'6,4'})
-    .bindPopup('"'+name+'" 참고 범위 (400m)<br>✏️ 직접 그리기로 정확한 구역 설정').addTo(map);
-  showToast('"'+name+'" 이동. ✏️ 직접 그리기로 안전구역을 정확히 설정하세요.', 'warn');
+  L.circle([lat,lng],{radius:400,color:'#58a6ff',weight:1,fillColor:'#58a6ff',fillOpacity:.06,dashArray:'6,4'}).bindPopup('"'+name+'" 참고 범위').addTo(map);
+  showToast('"'+name+'" 이동. 직접 그리기로 정확한 구역을 설정하세요.', 'warn');
 }
 
-// ── 학생 마커
-function isInSafeZone(lat, lng) {
-  if (!safeZones.length) return true;
-  return safeZones.some(function(z){ return pointInPoly(lat,lng,z.latlngs); });
-}
-function isInRedzone(lat, lng) {
-  return redzones.some(function(r){
-    var dx=(lat-r.lat)*111000, dy=(lng-r.lng)*111000*Math.cos(lat*Math.PI/180);
-    return Math.sqrt(dx*dx+dy*dy)<=r.radius;
-  });
-}
-function pointInPoly(lat, lng, pts) {
-  var inside=false;
-  for(var i=0,j=pts.length-1;i<pts.length;j=i++){
-    var xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];
-    if(((yi>lng)!==(yj>lng))&&(lat<(xj-xi)*(lng-yi)/(yj-yi)+xi))inside=!inside;
-  }
-  return inside;
-}
+function isInSafeZone(lat,lng){if(!safeZones.length)return true;return safeZones.some(function(z){return pointInPoly(lat,lng,z.latlngs);});}
+function isInRedzone(lat,lng){return redzones.some(function(r){var dx=(lat-r.lat)*111000,dy=(lng-r.lng)*111000*Math.cos(lat*Math.PI/180);return Math.sqrt(dx*dx+dy*dy)<=r.radius;});}
+function pointInPoly(lat,lng,pts){var inside=false;for(var i=0,j=pts.length-1;i<pts.length;j=i++){var xi=pts[i][0],yi=pts[i][1],xj=pts[j][0],yj=pts[j][1];if(((yi>lng)!==(yj>lng))&&(lat<(xj-xi)*(lng-yi)/(yj-yi)+xi))inside=!inside;}return inside;}
 
-function updateMapMarkers() {
-  if (!mapReady||!map) return;
-  Object.keys(studentMarkers).forEach(function(id){ try{map.removeLayer(studentMarkers[id]);}catch(e){}; });
+function updateMapMarkers(){
+  if(!mapReady||!map)return;
+  Object.keys(studentMarkers).forEach(function(id){try{map.removeLayer(studentMarkers[id]);}catch(e){};});
   studentMarkers={};
-  loadDB().filter(function(s){return s.lat&&s.lng;}).forEach(function(s) {
-    var inZone=isInSafeZone(s.lat,s.lng), inRZ=isInRedzone(s.lat,s.lng);
+  loadDB().filter(function(s){return s.lat&&s.lng;}).forEach(function(s){
+    var inZone=isInSafeZone(s.lat,s.lng),inRZ=isInRedzone(s.lat,s.lng);
     var col=inRZ?'#f85149':inZone?'#3fb950':'#f85149';
     var icon=L.divIcon({className:'',html:'<div style="width:26px;height:26px;border-radius:50%;background:'+col+';border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#0d1117;box-shadow:0 2px 8px rgba(0,0,0,.5)">'+s.name[0]+'</div>',iconSize:[26,26],iconAnchor:[13,13]});
-    studentMarkers[s.id]=L.marker([s.lat,s.lng],{icon:icon}).bindPopup('<b>'+s.name+'</b><br>'+s['class']+' '+s.number+'번<br>'+(inZone&&!inRZ?'✅ 안전':'🚨 이탈')).addTo(map);
-    if((!inZone||inRZ)&&s.stage===0) startAlert(s.id);
-    else if(inZone&&!inRZ&&s.stage>0) resolveAlert(s.id);
+    studentMarkers[s.id]=L.marker([s.lat,s.lng],{icon:icon}).bindPopup('<b>'+s.name+'</b><br>'+(inZone&&!inRZ?'안전':'이탈')).addTo(map);
+    if((!inZone||inRZ)&&s.stage===0)startAlert(s.id);
+    else if(inZone&&!inRZ&&s.stage>0)resolveAlert(s.id);
   });
 }
 
-// ── 학생 DB
 function loadDB(){try{return JSON.parse(localStorage.getItem(DB_KEY)||'[]');}catch(e){return[];}}
 function saveDB(d){localStorage.setItem(DB_KEY,JSON.stringify(d));}
 function getStudent(id){return loadDB().find(function(s){return s.id===id;});}
-function upsertStudent(info){
-  var db=loadDB(), i=db.findIndex(function(s){return s.id===info.id;});
-  if(i>=0)db[i]=Object.assign({},db[i],info);else db.push(info);
-  saveDB(db); refreshAllUI();
-}
-function syncFromStorage(){
-  var p=JSON.parse(localStorage.getItem('pending_signatures')||'[]'); if(!p.length)return;
-  var db=loadDB(); p.forEach(function(info){var i=db.findIndex(function(s){return s.id===info.id;});if(i>=0)db[i]=Object.assign({},db[i],info);else db.push(info);});
-  saveDB(db); localStorage.setItem('pending_signatures','[]');
-}
-function addStudentManual(){
-  var name=document.getElementById('add-name').value.trim();
-  var cls=document.getElementById('add-class').value.trim();
-  var num=document.getElementById('add-num').value;
-  var gender=document.getElementById('add-gender').value;
-  if(!name||!cls){showToast('이름과 학반을 입력하세요');return;}
-  upsertStudent({id:'s_'+Date.now(),name:name,'class':cls,number:num,gender:gender,signed:false,signedAt:null,lat:null,lng:null,stage:0});
-  document.getElementById('add-name').value='';document.getElementById('add-num').value='';
-  showToast('✅ '+name+' 추가됨');
-}
+function upsertStudent(info){var db=loadDB(),i=db.findIndex(function(s){return s.id===info.id;});if(i>=0)db[i]=Object.assign({},db[i],info);else db.push(info);saveDB(db);refreshAllUI();}
+function syncFromStorage(){var p=JSON.parse(localStorage.getItem('pending_signatures')||'[]');if(!p.length)return;var db=loadDB();p.forEach(function(info){var i=db.findIndex(function(s){return s.id===info.id;});if(i>=0)db[i]=Object.assign({},db[i],info);else db.push(info);});saveDB(db);localStorage.setItem('pending_signatures','[]');}
+function addStudentManual(){var name=document.getElementById('add-name').value.trim(),cls=document.getElementById('add-class').value.trim(),num=document.getElementById('add-num').value,gender=document.getElementById('add-gender').value;if(!name||!cls){showToast('이름과 학반을 입력하세요');return;}upsertStudent({id:'s_'+Date.now(),name:name,'class':cls,number:num,gender:gender,signed:false,signedAt:null,lat:null,lng:null,stage:0});document.getElementById('add-name').value='';document.getElementById('add-num').value='';showToast(name + ' 추가됨');}
 function removeStudent(id){saveDB(loadDB().filter(function(s){return s.id!==id;}));refreshAllUI();}
 function refreshDB(){syncFromStorage();renderDBTable();}
 function renderDBTable(){
-  var db=loadDB(), s=db.filter(function(x){return x.signed;}).length;
-  document.getElementById('db-s').textContent=s;
-  document.getElementById('db-u').textContent=db.length-s;
-  document.getElementById('db-t').textContent=db.length;
-  document.getElementById('dbPill').textContent='학생 '+db.length+'명';
-  if(!db.length){document.getElementById('dbTable').innerHTML='<div style="color:var(--dm);font-size:13px;padding:12px 0;text-align:center">등록된 학생 없음<br>학생 앱에서 서명 또는 수동 추가</div>';return;}
-  document.getElementById('dbTable').innerHTML='<table class="dbtbl"><thead><tr><th>이름</th><th>학반</th><th>서명</th><th>서명일시</th><th></th></tr></thead><tbody>' +
-    db.map(function(s){return '<tr><td><b>'+s.name+'</b></td><td style="color:var(--dm);font-size:11px">'+(s['class']||'-')+' '+(s.number||'')+'번</td><td>'+(s.signed?'<span class="signed">✓</span>':'<span class="unsigned">미서명</span>')+'</td><td style="color:var(--dm);font-size:10px">'+(s.signedAt?s.signedAt.slice(5,16).replace('T',' '):'-')+'</td><td><button onclick="removeStudent(\''+s.id+'\')" style="background:none;border:none;color:var(--dm);cursor:pointer;font-size:14px">✕</button></td></tr>';}).join('') + '</tbody></table>';
+  var db=loadDB(),s=db.filter(function(x){return x.signed;}).length;
+  document.getElementById('db-s').textContent=s;document.getElementById('db-u').textContent=db.length-s;document.getElementById('db-t').textContent=db.length;document.getElementById('dbPill').textContent='학생 '+db.length+'명';
+  if(!db.length){document.getElementById('dbTable').innerHTML='<div style="color:var(--dm);font-size:13px;padding:12px 0;text-align:center">등록된 학생 없음</div>';return;}
+  document.getElementById('dbTable').innerHTML='<table class="dbtbl"><thead><tr><th>이름</th><th>학반</th><th>서명</th><th>서명일시</th><th></th></tr></thead><tbody>'+db.map(function(s){return '<tr><td><b>'+s.name+'</b></td><td style="color:var(--dm);font-size:11px">'+(s['class']||'-')+' '+(s.number||'')+'번</td><td>'+(s.signed?'<span class="signed">&#x2713;</span>':'<span class="unsigned">미서명</span>')+'</td><td style="color:var(--dm);font-size:10px">'+(s.signedAt?s.signedAt.slice(5,16).replace('T',' '):'-')+'</td><td><button onclick="removeStudent(''+s.id+'')" style="background:none;border:none;color:var(--dm);cursor:pointer;font-size:14px">&#x2715;</button></td></tr>';}).join('')+'</tbody></table>';
 }
-function exportCSV(){
-  var db=loadDB();
-  var csv=['이름,학반,번호,성별,서명,서명일시'].concat(db.map(function(s){return s.name+','+(s['class']||'')+','+(s.number||'')+','+(s.gender||'')+','+(s.signed?'완료':'미완료')+','+(s.signedAt||'');})).join('\n');
-  var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'})); a.download='학생DB_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
-}
-function updateAllStats(){
-  var db=loadDB(), warns=db.filter(function(s){return s.stage>0;}).length;
-  ['h-total','db-t'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=db.length;});
-  ['h-safe','m-safe'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=db.filter(function(s){return s.stage===0&&s.lat;}).length;});
-  ['h-warn','m-warn'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=warns;});
-  var mo=document.getElementById('m-off');if(mo)mo.textContent=db.filter(function(s){return !s.lat;}).length;
-  document.getElementById('dbPill').textContent='학생 '+db.length+'명';
-  var ap=document.getElementById('alertPill'),mb=document.getElementById('mapBadge');
-  if(warns>0){if(ap){ap.style.display='';ap.textContent='경보 '+warns;}if(mb){mb.textContent=warns;mb.style.display='';}}
-  else{if(ap)ap.style.display='none';if(mb)mb.style.display='none';}
-}
-function renderHomeStudents(){
-  var db=loadDB().slice(0,5);
-  if(!db.length){document.getElementById('homeStudents').innerHTML='<div style="color:var(--dm);font-size:13px;padding:8px 0">학생 앱에서 서명 후 자동 등록됩니다</div>';return;}
-  document.getElementById('homeStudents').innerHTML=db.map(function(s){
-    var col=s.stage>0?'rgba(248,81,73,.2)':'rgba(63,185,80,.2)', tc=s.stage>0?'#f85149':'#3fb950';
-    var b=s.stage>0?'<span class="bdg b-warn">이탈</span>':s.lat?'<span class="bdg b-safe">안전</span>':'<span class="bdg b-off">대기</span>';
-    return '<div class="sr"><div class="av" style="background:'+col+';color:'+tc+'">'+s.name[0]+'</div><div class="si"><div class="sn">'+s.name+'</div><div class="sd">'+(s['class']||'?')+'반 '+(s.number||'?')+'번</div></div>'+b+'</div>';
-  }).join('');
-}
-function renderHomeAlerts(){
-  var warns=loadDB().filter(function(s){return s.stage>0;});
-  var el=document.getElementById('homeAlerts');if(!el)return;
-  el.innerHTML=warns.map(function(s){return '<div class="astrip r" onclick="goPage(\'map\')"><div class="adot"></div><div><div style="font-size:13px;font-weight:600;color:#f85149">⚠ '+s.name+' — '+s.stage+'단계 경보</div><div style="font-size:11px;color:var(--dm)">구역 이탈 감지</div></div></div>';}).join('');
-}
+function exportCSV(){var db=loadDB(),csv=['이름,학반,번호,성별,서명,서명일시'].concat(db.map(function(s){return s.name+','+(s['class']||'')+','+(s.number||'')+','+(s.gender||'')+','+(s.signed?'완료':'미완료')+','+(s.signedAt||'');})).join('\n');var a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='학생DB_'+new Date().toISOString().slice(0,10)+'.csv';a.click();}
+function updateAllStats(){var db=loadDB(),warns=db.filter(function(s){return s.stage>0;}).length;['h-total','db-t'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=db.length;});['h-safe','m-safe'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=db.filter(function(s){return s.stage===0&&s.lat;}).length;});['h-warn','m-warn'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=warns;});var mo=document.getElementById('m-off');if(mo)mo.textContent=db.filter(function(s){return !s.lat;}).length;document.getElementById('dbPill').textContent='학생 '+db.length+'명';var ap=document.getElementById('alertPill'),mb=document.getElementById('mapBadge');if(warns>0){if(ap){ap.style.display='';ap.textContent='경보 '+warns;}if(mb){mb.textContent=warns;mb.style.display='';}}else{if(ap)ap.style.display='none';if(mb)mb.style.display='none';}}
+function renderHomeStudents(){var db=loadDB().slice(0,5);if(!db.length){document.getElementById('homeStudents').innerHTML='<div style="color:var(--dm);font-size:13px;padding:8px 0">학생 앱에서 서명 후 자동 등록됩니다</div>';return;}document.getElementById('homeStudents').innerHTML=db.map(function(s){var col=s.stage>0?'rgba(248,81,73,.2)':'rgba(63,185,80,.2)',tc=s.stage>0?'#f85149':'#3fb950',b=s.stage>0?'<span class="bdg b-warn">이탈</span>':s.lat?'<span class="bdg b-safe">안전</span>':'<span class="bdg b-off">대기</span>';return '<div class="sr"><div class="av" style="background:'+col+';color:'+tc+'">'+s.name[0]+'</div><div class="si"><div class="sn">'+s.name+'</div><div class="sd">'+(s['class']||'?')+'반 '+(s.number||'?')+'번</div></div>'+b+'</div>';}).join('');}
+function renderHomeAlerts(){var warns=loadDB().filter(function(s){return s.stage>0;}),el=document.getElementById('homeAlerts');if(!el)return;el.innerHTML=warns.map(function(s){return '<div class="astrip r" onclick="goPage('map')"><div class="adot"></div><div><div style="font-size:13px;font-weight:600;color:#f85149">'+s.name+' - '+s.stage+'단계 경보</div><div style="font-size:11px;color:var(--dm)">구역 이탈 감지</div></div></div>';}).join('');}
 function refreshAllUI(){renderDBTable();renderHomeStudents();renderHomeAlerts();updateAllStats();updateMapMarkers();renderStagePanel();}
 
-// ── 3단계 경보
-function startAlert(sid){
-  if(alertTimers[sid])return;
-  var s=getStudent(sid);if(!s||s.stage>0)return;
-  upsertStudent(Object.assign({},s,{stage:1}));renderStagePanel();
-  if(Notification.permission==='granted')new Notification('\uD83D\uDEA8 구역 이탈',{body:s.name+' 구역 이탈 감지'});
-  alertTimers[sid]={t1:setTimeout(function(){
-    var c=getStudent(sid);if(!c||c.stage!==1)return;
-    upsertStudent(Object.assign({},c,{stage:2}));renderStagePanel();
-    alertTimers[sid].t2=setTimeout(function(){
-      var c2=getStudent(sid);if(!c2||c2.stage!==2)return;
-      upsertStudent(Object.assign({},c2,{stage:3}));renderStagePanel();show119(sid);
-    },10000);
-  },10000)};
-}
-function resolveAlert(sid){
-  var s=getStudent(sid);if(!s)return;
-  upsertStudent(Object.assign({},s,{stage:0}));
-  if(alertTimers[sid]){clearTimeout(alertTimers[sid].t1);clearTimeout(alertTimers[sid].t2);delete alertTimers[sid];}
-  closeM('emergM');renderStagePanel();updateAllStats();showToast('✅ '+s.name+' 복귀 확인');
-}
-function renderStagePanel(){
-  var el=document.getElementById('stagePanel');if(!el)return;
-  var warns=loadDB().filter(function(s){return s.stage>0;});
-  if(!warns.length){el.innerHTML='<div class="sb2 s0"><div style="font-size:14px;font-weight:700;color:var(--gr)">✅ 전체 학생 안전구역 내</div></div>';return;}
-  el.innerHTML=warns.map(function(s){
-    var infos=[{l:'1단계 — 학생 알림',d:'학생 기기 경보 발송.'},{l:'2단계 — 교사 경보',d:'교사 즉시 대응!'},{l:'3단계 — 119 대기',d:'자동 신고 카운트다운.'}];
-    var info=infos[s.stage-1]||{};
-    return '<div class="sb2 s'+s.stage+'"><div style="font-size:14px;font-weight:700;margin-bottom:3px">'+s.name+' · '+info.l+'</div><div style="font-size:12px;color:var(--dm)">'+info.d+'</div><div class="cbar"><div class="cfill" style="width:'+[100,66,33][s.stage-1]+'%"></div></div><button onclick="resolveAlert(\''+s.id+'\')" style="margin-top:9px;background:var(--gr);color:var(--bg);border:none;padding:7px 18px;border-radius:9px;font-family:inherit;font-weight:700;cursor:pointer;font-size:13px">✅ 확인 완료</button></div>';
-  }).join('');
-}
-function show119(sid){
-  var s=getStudent(sid);if(!s)return;
-  document.getElementById('emergDesc').innerHTML='<b style="color:var(--rd)">'+s.name+'</b> ('+s['class']+' '+s.number+'번)<br>20초 무응답. 10초 후 119 자동 신고.';
-  showM('emergM');
-  var rem=10; document.getElementById('emergCD').textContent=rem; document.getElementById('emergBar').style.width='100%';
-  e119t=setInterval(function(){rem--;document.getElementById('emergCD').textContent=rem;document.getElementById('emergBar').style.width=(rem*10)+'%';if(rem<=0){clearInterval(e119t);force119(sid);}},1000);
-}
-function confirmEmerg(){clearInterval(e119t);var s=loadDB().find(function(x){return x.stage===3;});if(s)resolveAlert(s.id);closeM('emergM');showToast('✅ 교사 확인. 119 취소.');}
-function force119(sid){clearInterval(e119t);closeM('emergM');var s=sid?getStudent(sid):loadDB().find(function(x){return x.stage>=2;});var msg=s?('[자동신고] '+s.name+'(각화중 현장체험학습) 구역이탈 | 위치:'+(s.lat?s.lat.toFixed(5):'불명')+','+(s.lng?s.lng.toFixed(5):'불명')):'긴급:학생이탈 자동신고';window.location.href='sms:119?body='+encodeURIComponent(msg);}
+function startAlert(sid){if(alertTimers[sid])return;var s=getStudent(sid);if(!s||s.stage>0)return;upsertStudent(Object.assign({},s,{stage:1}));renderStagePanel();alertTimers[sid]={t1:setTimeout(function(){var c=getStudent(sid);if(!c||c.stage!==1)return;upsertStudent(Object.assign({},c,{stage:2}));renderStagePanel();alertTimers[sid].t2=setTimeout(function(){var c2=getStudent(sid);if(!c2||c2.stage!==2)return;upsertStudent(Object.assign({},c2,{stage:3}));renderStagePanel();show119(sid);},10000);},10000)};}
+function resolveAlert(sid){var s=getStudent(sid);if(!s)return;upsertStudent(Object.assign({},s,{stage:0}));if(alertTimers[sid]){clearTimeout(alertTimers[sid].t1);clearTimeout(alertTimers[sid].t2);delete alertTimers[sid];}closeM('emergM');renderStagePanel();updateAllStats();showToast(s.name + ' 복귀 확인');}
+function renderStagePanel(){var el=document.getElementById('stagePanel');if(!el)return;var warns=loadDB().filter(function(s){return s.stage>0;});if(!warns.length){el.innerHTML='<div class="sb2 s0"><div style="font-size:14px;font-weight:700;color:var(--gr)">&#x2705; 전체 학생 안전구역 내</div></div>';return;}el.innerHTML=warns.map(function(s){var infos=[{l:'1단계-학생 알림',d:'학생 기기 경보'},{l:'2단계-교사 경보',d:'교사 즉시 대응!'},{l:'3단계-119 대기',d:'카운트다운'}];var info=infos[s.stage-1]||{};return '<div class="sb2 s'+s.stage+'"><div style="font-size:14px;font-weight:700;margin-bottom:3px">'+s.name+' - '+info.l+'</div><div style="font-size:12px;color:var(--dm)">'+info.d+'</div><div class="cbar"><div class="cfill" style="width:'+[100,66,33][s.stage-1]+'%"></div></div><button onclick="resolveAlert(''+s.id+'')" style="margin-top:9px;background:var(--gr);color:var(--bg);border:none;padding:7px 18px;border-radius:9px;font-family:inherit;font-weight:700;cursor:pointer;font-size:13px">&#x2705; 확인 완료</button></div>';}).join('');}
+function show119(sid){var s=getStudent(sid);if(!s)return;document.getElementById('emergDesc').innerHTML='<b style="color:var(--rd)">'+s.name+'</b> ('+s['class']+' '+s.number+'번)<br>20초 무응답. 10초 후 119 자동 신고.';showM('emergM');var rem=10;document.getElementById('emergCD').textContent=rem;document.getElementById('emergBar').style.width='100%';e119t=setInterval(function(){rem--;document.getElementById('emergCD').textContent=rem;document.getElementById('emergBar').style.width=(rem*10)+'%';if(rem<=0){clearInterval(e119t);force119(sid);}},1000);}
+function confirmEmerg(){clearInterval(e119t);var s=loadDB().find(function(x){return x.stage===3;});if(s)resolveAlert(s.id);closeM('emergM');showToast('교사 확인. 119 취소.');}
+function force119(sid){clearInterval(e119t);closeM('emergM');var s=sid?getStudent(sid):loadDB().find(function(x){return x.stage>=2;});var msg=s?('[자동신고] '+s.name+'(각화중 현장체험학습) 구역이탈 | 위치:'+(s.lat?s.lat.toFixed(5):'불명')+','+(s.lng?s.lng.toFixed(5):'불명')):'긴급:학생이탈';window.location.href='sms:119?body='+encodeURIComponent(msg);}
 
-// ── AI 챗봇
-function sendChat(){
-  var el=document.getElementById('chin');var msg=el.value.trim();if(!msg)return;
-  el.value='';el.style.height='auto';addMsg('u',msg);
-  var tid='t'+Date.now();
-  document.getElementById('chatArea').innerHTML+='<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
-  document.getElementById('chatArea').scrollTop=9999;
-  callAI('당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇.\n[규정]\n'+SCHOOL_RULES+'\n[민원]\n"'+msg+'"\n[원칙] 1.공감 2.규정근거 3.단호 4.대안\n250자 이내.',800)
-    .then(function(r){document.getElementById(tid).remove();addMsg('b',r);})
-    .catch(function(e){document.getElementById(tid).remove();addMsg('b','⚠️ AI 오류: '+e.message);});
-}
-function addMsg(role,text){
-  var ca=document.getElementById('chatArea'),now=new Date();
-  var time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-  ca.innerHTML+='<div class="cm '+role+'"><div class="mb">'+text.replace(/\n/g,'<br>')+'</div><div class="mtime">'+time+'</div></div>';
-  ca.scrollTop=9999;
-}
+function sendChat(){var el=document.getElementById('chin'),msg=el.value.trim();if(!msg)return;el.value='';el.style.height='auto';addMsg('u',msg);var tid='t'+Date.now();document.getElementById('chatArea').innerHTML+='<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';document.getElementById('chatArea').scrollTop=9999;callAI('당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇.\n[규정]\n'+SCHOOL_RULES+'\n[민원]\n"'+msg+'"\n[원칙] 1.공감 2.규정근거 3.단호 4.대안\n250자 이내.',800).then(function(r){var t=document.getElementById(tid);if(t)t.remove();addMsg('b',r);}).catch(function(e){var t=document.getElementById(tid);if(t)t.remove();addMsg('b','AI 오류: '+e.message);});}
+function addMsg(role,text){var ca=document.getElementById('chatArea'),now=new Date(),time=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');ca.innerHTML+='<div class="cm '+role+'"><div class="mb">'+text.replace(/\n/g,'<br>')+'</div><div class="mtime">'+time+'</div></div>';ca.scrollTop=9999;}
 function qs(t){document.getElementById('chin').value=t;sendChat();}
-function callAI(prompt,max){
-  return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-request-check':'skip'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max||800,messages:[{role:'user',content:prompt}]})})
-    .then(function(res){if(!res.ok)return res.json().then(function(e){throw new Error(e.error&&e.error.message||'HTTP '+res.status);});return res.json();})
-    .then(function(d){return (d.content||[]).map(function(c){return c.text||'';}).join('');});
-}
-function runRoute(){
-  var s=document.getElementById('rS').value, e=document.getElementById('rE').value;
-  document.getElementById('routeC').style.display='none';
-  document.getElementById('routeR').innerHTML='<div style="text-align:center;padding:20px"><div class="spin" style="margin:0 auto"></div><div style="font-size:13px;color:var(--dm);margin-top:10px">AI 분석 중...</div></div>';
-  callAI('현장체험학습 안전경로 분석. 출발:'+s+'→'+e+'. 교통사고:경부선855건위험/당진청주선5건안전.\n🥇 추천경로\n경유노선:[]\n안전도:⭐⭐⭐⭐⭐\n이유:\n🥈 대안경로\n경유노선:[]\n안전도:⭐⭐⭐⭐\n⚠️ 주의사항 3가지\n✅ 교사 책임보호 2가지',1200)
-    .then(function(r){document.getElementById('routeR').innerHTML='<div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+r+'</div><button class="btn btn-s2" style="margin-top:10px" onclick="document.getElementById(\'routeC\').style.display=\'block\';document.getElementById(\'routeR\').innerHTML=\'\'">← 다시 분석</button>';})
-    .catch(function(e){document.getElementById('routeR').innerHTML='<div style="color:var(--rd);font-size:13px;padding:10px">오류: '+e.message+'</div>';document.getElementById('routeC').style.display='block';});
-}
+function callAI(prompt,max){return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-request-check':'skip'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max||800,messages:[{role:'user',content:prompt}]})}).then(function(res){if(!res.ok)return res.json().then(function(e){throw new Error(e.error&&e.error.message||'HTTP '+res.status);});return res.json();}).then(function(d){return(d.content||[]).map(function(c){return c.text||'';}).join('');});}
+function runRoute(){var s=document.getElementById('rS').value,e=document.getElementById('rE').value;document.getElementById('routeC').style.display='none';document.getElementById('routeR').innerHTML='<div style="text-align:center;padding:20px"><div class="spin" style="margin:0 auto"></div></div>';callAI('현장체험학습 안전경로. 출발:'+s+'->'+e+'. 경부선855건위험/당진청주선5건안전.\n추천경로/안전도/이유/대안경로/주의사항3가지/교사책임보호2가지',1200).then(function(r){document.getElementById('routeR').innerHTML='<div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+r+'</div><button class="btn btn-s2" style="margin-top:10px" onclick="document.getElementById('routeC').style.display='block';document.getElementById('routeR').innerHTML=''">다시 분석</button>';}).catch(function(e){document.getElementById('routeR').innerHTML='<div style="color:var(--rd);font-size:13px">오류: '+e.message+'</div>';document.getElementById('routeC').style.display='block';});}
 
-// ── 유틸
-function goPage(name){
-  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
-  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
-  var pg=document.getElementById('pg-'+name); if(pg)pg.classList.add('on');
-  var ni=document.getElementById('ni-'+name); if(ni)ni.classList.add('on');
-  document.getElementById('mainScroll').scrollTop=0;
-  if(name==='map'){
-    requestAnimationFrame(function(){requestAnimationFrame(function(){
-      if(!mapReady) initMap();
-      else if(map) setTimeout(function(){map.invalidateSize();},200);
-    });});
-  }
-  if(name==='db') refreshDB();
-}
+function goPage(name){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});var pg=document.getElementById('pg-'+name);if(pg)pg.classList.add('on');var ni=document.getElementById('ni-'+name);if(ni)ni.classList.add('on');document.getElementById('mainScroll').scrollTop=0;if(name==='map'){requestAnimationFrame(function(){requestAnimationFrame(function(){if(!mapReady)initMap();else if(map)setTimeout(function(){map.invalidateSize();},200);});});}if(name==='db')refreshDB();}
 function showM(id){var el=document.getElementById(id);if(el)el.classList.add('on');}
 function closeM(id){var el=document.getElementById(id);if(el)el.classList.remove('on');}
 document.querySelectorAll('.mover').forEach(function(m){m.addEventListener('click',function(e){if(e.target===m)m.classList.remove('on');});});
 var _toastT;
-function showToast(msg,type){
-  var t=document.getElementById('toast');if(!t)return;
-  t.textContent=msg;
-  t.style.background=type==='danger'?'#f85149':type==='warn'?'#d29922':'rgba(88,166,255,.9)';
-  t.style.color=type==='warn'?'#111':'#fff';
-  t.style.opacity='1';
-  clearTimeout(_toastT);_toastT=setTimeout(function(){t.style.opacity='0';},4000);
-}
+function showToast(msg,type){var t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.style.background=type==='danger'?'#f85149':type==='warn'?'#d29922':'rgba(88,166,255,.9)';t.style.color=type==='warn'?'#111':'#fff';t.style.opacity='1';clearTimeout(_toastT);_toastT=setTimeout(function(){t.style.opacity='0';},4000);}
 function shareStudentApp(){var url=location.href.replace('teacher.html','student.html');if(navigator.share)navigator.share({title:'현장체험학습 학생 앱',url:url});else{try{navigator.clipboard.writeText(url);}catch(e){}showToast('학생 앱 URL 복사됨');}}
 
-// ── 초기화
 document.addEventListener('DOMContentLoaded', function(){
-  var now=new Date();
-  var days=['일','월','화','수','목','금','토'];
+  var now=new Date(), days=['일','월','화','수','목','금','토'];
   document.getElementById('heroDate').textContent=now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0')+' ('+days[now.getDay()]+')';
-  var rdt=document.getElementById('rDT'); if(rdt) rdt.value=now.toISOString().slice(0,16);
-  syncFromStorage(); refreshAllUI();
+  var rdt=document.getElementById('rDT');if(rdt)rdt.value=now.toISOString().slice(0,16);
+  syncFromStorage();refreshAllUI();
   setInterval(function(){syncFromStorage();updateAllStats();},4000);
-  if(Notification.permission==='default') Notification.requestPermission();
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+  if(Notification.permission==='default')Notification.requestPermission();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
   if(loadDB().length===0){
     saveDB([
       {id:'demo1',name:'김민준','class':'2-1',number:'3',gender:'남',signed:false,signedAt:null,lat:null,lng:null,stage:0},
       {id:'demo2',name:'이수진','class':'2-1',number:'7',gender:'여',signed:false,signedAt:null,lat:null,lng:null,stage:0},
       {id:'demo3',name:'박지호','class':'2-2',number:'12',gender:'남',signed:false,signedAt:null,lat:null,lng:null,stage:0}
-    ]); refreshAllUI();
+    ]);refreshAllUI();
   }
 });
 </script>
