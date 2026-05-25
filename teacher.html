@@ -870,7 +870,6 @@ function addMsg(role,text){
   ca.innerHTML+='<div class="cm '+role+'"><div class="mb">'+text.replace(/\n/g,'<br>')+'</div><div class="mtime">'+time+'</div></div>';
   ca.scrollTop=9999;
 }
-// 기존 callAI 함수를 아래 코드로 교체합니다.
 function callAI(prompt, max) {
   // 1. 브라우저 저장소에서 API 키 확인, 없으면 팝업으로 입력받음
   var apiKey = localStorage.getItem('GEMINI_API_KEY');
@@ -882,7 +881,8 @@ function callAI(prompt, max) {
     localStorage.setItem('GEMINI_API_KEY', apiKey);
   }
 
-  var modelName = 'gemini-2.5-flash'; 
+  // 범용적이고 안정적인 모델명 사용
+  var modelName = 'gemini-1.5-flash'; 
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
   
   return fetch(url, {
@@ -890,12 +890,14 @@ function callAI(prompt, max) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: max || 1500 } // 끊김 방지를 위해 토큰 여유 확보
+      generationConfig: { 
+        maxOutputTokens: max || 2000,
+        temperature: 0.2 // 답변의 일관성을 높이기 위해 온도를 낮춤
+      }
     })
   })
   .then(function(res) {
     if (!res.ok) {
-      // 2. 키가 정지(Leaked)되었거나 잘못된 경우 로컬 스토리지에서 삭제
       if (res.status === 400 || res.status === 403) {
         localStorage.removeItem('GEMINI_API_KEY');
       }
@@ -906,8 +908,17 @@ function callAI(prompt, max) {
     return res.json();
   })
   .then(function(d) {
-    if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts && d.candidates[0].content.parts[0]) {
-      return d.candidates[0].content.parts[0].text || '';
+    // 👑 [핵심 수정] parts 배열에 나뉘어 들어온 모든 텍스트 조각을 반복문으로 합쳐줍니다.
+    if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) {
+      var parts = d.candidates[0].content.parts;
+      var fullText = '';
+      
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].text) {
+          fullText += parts[i].text;
+        }
+      }
+      return fullText || '답변을 생성할 수 없습니다.';
     }
     return '답변을 생성할 수 없습니다.';
   });
