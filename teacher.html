@@ -858,35 +858,35 @@ function addMsg(role,text){
   ca.innerHTML+='<div class="cm '+role+'"><div class="mb">'+text.replace(/\n/g,'<br>')+'</div><div class="mtime">'+time+'</div></div>';
   ca.scrollTop=9999;
 }
-function qs(t){document.getElementById('chin').value=t;sendChat();}
-// function callAI(prompt,max){
-//   return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-request-check':'skip'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max||800,messages:[{role:'user',content:prompt}]})})
-//     .then(function(res){if(!res.ok)return res.json().then(function(e){throw new Error(e.error&&e.error.message||'HTTP '+res.status);});return res.json();})
-//     .then(function(d){return (d.content||[]).map(function(c){return c.text||'';}).join('');});
-// }
-// 1. Gemini API 호출 함수 (gemini-2.5-flash 적용 및 설정 최적화)
+// 기존 callAI 함수를 아래 코드로 교체합니다.
 function callAI(prompt, max) {
-  var apiKey = 'AIzaSyA7ld7d57ydK9H95CrPYAuoKqyPRwqLr10';
+  // 1. 브라우저 저장소에서 API 키 확인, 없으면 팝업으로 입력받음
+  var apiKey = localStorage.getItem('GEMINI_API_KEY');
+  if (!apiKey) {
+    apiKey = window.prompt('Gemini API 키를 입력하세요.\n(입력된 키는 사용자 브라우저에만 안전하게 저장됩니다.)');
+    if (!apiKey) {
+      return Promise.reject(new Error('API 키 입력이 취소되었습니다.'));
+    }
+    localStorage.setItem('GEMINI_API_KEY', apiKey);
+  }
+
   var modelName = 'gemini-2.5-flash'; 
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
   
   return fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{
-        parts: [{ text: prompt }]
-      }],
-      generationConfig: {
-        // 최대 출력 길이를 늘려 한국어 답변이 잘리지 않도록 보장합니다.
-        maxOutputTokens: max || 1000
-      }
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: max || 1500 } // 끊김 방지를 위해 토큰 여유 확보
     })
   })
   .then(function(res) {
     if (!res.ok) {
+      // 2. 키가 정지(Leaked)되었거나 잘못된 경우 로컬 스토리지에서 삭제
+      if (res.status === 400 || res.status === 403) {
+        localStorage.removeItem('GEMINI_API_KEY');
+      }
       return res.json().then(function(e) {
         throw new Error(e.error && e.error.message || 'HTTP ' + res.status);
       });
@@ -901,23 +901,40 @@ function callAI(prompt, max) {
   });
 }
 // 2. 메시지 끊김 방지 지침이 추가된 채팅 발송 함수
+// 기존 sendChat 함수를 아래 코드로 교체합니다.
 function sendChat(){
-  var el=document.getElementById('chin');var msg=el.value.trim();if(!msg)return;
-  el.value='';el.style.height='auto';addMsg('u',msg);
-  var tid='t'+Date.now();
-  document.getElementById('chatArea').innerHTML+='<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
-  document.getElementById('chatArea').scrollTop=9999;
+  var el = document.getElementById('chin');
+  var msg = el.value.trim();
+  if(!msg) return;
+  
+  el.value = '';
+  el.style.height = 'auto';
+  addMsg('u', msg);
+  
+  var tid = 't' + Date.now();
+  document.getElementById('chatArea').innerHTML += '<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
+  document.getElementById('chatArea').scrollTop = 9999;
 
-  // ✨ 문장이 중간에 잘리지 않고 온전하게 마무리되도록 프롬프트 지침을 강화했습니다.
-  var optimizedPrompt = '당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n' +
-                        '[규정]\n' + SCHOOL_RULES + '\n' +
-                        '[민원 내용]\n"' + msg + '"\n' +
-                        '[답변 원칙] 1.학부모 마음에 공감 2.학교 규정 근거 명시 3.변경 불가함을 단호하게 안내 4.차선책이나 대안 제시\n' +
-                        '[중요 요구사항] 답변은 공백 포함 200~250자 내외로 간결하게 작성하되, **절대로 문장 중간에 글을 끊지 마십시오. 반드시 마지막 문장은 마침표(.)로 끝나는 완결된 형태의 올바른 문장으로 마무리해야 합니다.**';
+  // ✨ 글자 수 제한을 없애고 3단 구조(도입-근거-대안)를 완벽히 채우도록 지시
+  var optimizedPrompt = '당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n\n' +
+                        '[학교 규정]\n' + SCHOOL_RULES + '\n\n' +
+                        '[학부모 민원]\n"' + msg + '"\n\n' +
+                        '[답변 작성 구조]\n' +
+                        '글자 수 제한은 없습니다. 반드시 아래의 3단계 구조를 순서대로 완벽하게 작성하여 대답을 완성하세요.\n' +
+                        '1. 도입: 학부모의 민원 내용에 대한 공감과 정중한 인사\n' +
+                        '2. 근거: 학교 규정 및 지침에 기반하여 변경 불가함을 명확하고 단호하게 안내\n' +
+                        '3. 대안 및 마무리: 적용 가능한 현실적인 대안(또는 차선책) 제시 및 정중한 끝맺음 인사\n\n' +
+                        '주의: 각 단계를 줄바꿈으로 구분하고, 3단계의 끝맺음 인사가 끝나기 전에는 절대로 답변을 중단하지 마십시오.';
 
-  callAI(optimizedPrompt, 1000)
-    .then(function(r){document.getElementById(tid).remove();addMsg('b',r);})
-    .catch(function(e){document.getElementById(tid).remove();addMsg('b','⚠️ AI 오류: '+e.message);});
+  callAI(optimizedPrompt, 1500)
+    .then(function(r){
+      document.getElementById(tid).remove();
+      addMsg('b', r);
+    })
+    .catch(function(e){
+      document.getElementById(tid).remove();
+      addMsg('b', '⚠️ AI 오류: ' + e.message + '<br><button onclick="localStorage.removeItem(\'GEMINI_API_KEY\');showToast(\'키 초기화 됨. 다시 시도하세요.\')" style="margin-top:5px;font-size:11px;padding:4px 8px;">API 키 재설정</button>');
+    });
 }
 
 // ── 유틸
