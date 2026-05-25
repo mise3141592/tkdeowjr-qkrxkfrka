@@ -834,7 +834,12 @@ function qs(t){document.getElementById('chin').value=t;sendChat();}
 // }
 function callAI(prompt, max) {
   var apiKey = 'AIzaSyA7ld7d57ydK9H95CrPYAuoKqyPRwqLr10';
-  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=' + apiKey;
+  
+  // ✨ 사용할 모델 명 지정 (안정적인 gemini-2.5-flash 설정)
+  // 최신 모델을 원하시면 'gemini-3.5-flash'로 변경하셔도 됩니다.
+  var modelName = 'gemini-2.5-flash'; 
+  
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
   
   return fetch(url, {
     method: 'POST',
@@ -859,7 +864,7 @@ function callAI(prompt, max) {
     return res.json();
   })
   .then(function(d) {
-    // Gemini API 응답 구조에서 텍스트 데이터 추출
+    // 응답 구조에서 텍스트 추출
     if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts && d.candidates[0].content.parts[0]) {
       return d.candidates[0].content.parts[0].text || '';
     }
