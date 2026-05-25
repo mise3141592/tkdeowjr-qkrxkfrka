@@ -322,7 +322,7 @@ var ZONE_KEY    = 'fieldtrip_zones_v2';
 // 생활안전지도 레이어 (objtId=205: IF_0087, objtId=173: IF_0020)
 var SAFETY_LAYERS = [
   { id:'crime', wmsUrl:'https://www.safemap.go.kr/openapi2/IF_0087_WMS?serviceKey=' + SAFEMAP_KEY,
-    layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_Tot', label:'\uD83D\uDEA8 범죄주의구간', color:'#f85149' },
+    layer:'A2SM_CRMNLHSPOT_TOT', style:'A2SM_CrmnlHspot_Tot_All', label:'\uD83D\uDEA8 범죄주의구간', color:'#f85149' },
   { id:'fall',  wmsUrl:'https://www.safemap.go.kr/openapi2/IF_0020_WMS?serviceKey=' + SAFEMAP_KEY,
     layer:'A2SM_CRASHACDNTSTTUS', style:'A2SM_CrashAcdntSttus', label:'\u26A0\uFE0F 추락낙상사고', color:'#ffd93d' }
 ];
@@ -380,8 +380,7 @@ function initMap() {
       wmsLayers[lyr.id] = L.tileLayer.wms(lyr.wmsUrl, {
         layers:lyr.layer, styles:lyr.style, format:'image/png',
         transparent:true, version:'1.1.1', crs:L.CRS.EPSG3857,
-        tileSize:512, opacity:0.85, zIndex:10, attribution:'© 생활안전지도',
-        uppercase:true
+        tileSize:512, opacity:0.85, zIndex:10, attribution:'© 생활안전지도'
       });
       wmsLayers[lyr.id].on('tileerror', (function(l){
         return function() {
@@ -440,81 +439,7 @@ function toggleSafetyLayer(id, color, btn) {
     wmsLayers[id].addTo(map);
     activeLayers[id] = true;
     btn.classList.add('on'); btn.style.background=color; btn.style.color=(color==='#ffd93d')?'#111':'#fff';
-    showToast(lyr.label + ' ON — 레드존 자동 분석 중...');
-    setTimeout(function(){ autoRedzoneFromWMS(lyr); }, 1500);
-  }
-}
-
-// ── 생활안전지도 WMS → 레드존 자동 지정
-// 범죄: GetFeatureInfo 픽셀 밀도 분석 → 고밀도 지점 레드존
-// 낙상: GetFeatureInfo 포인트 수집 → 밀집 클러스터 레드존
-function autoRedzoneFromWMS(lyr) {
-  if (!map || !mapReady) return;
-  var bounds = map.getBounds();
-  var size   = map.getSize();
-  var sw = map.options.crs.project(bounds.getSouthWest());
-  var ne = map.options.crs.project(bounds.getNorthEast());
-  var bbox = sw.x + ',' + sw.y + ',' + ne.x + ',' + ne.y;
-
-  // GetFeatureInfo 요청: 지도를 격자로 나눠 여러 지점 조회
-  var gridN = 4; // 4x4 = 16개 지점 조회
-  var added = 0;
-  var pending = 0;
-  var colorMap = { crime:'#f85149', fall:'#ffd93d' };
-  var radiusMap = { crime:120, fall:40 };
-
-  for (var gi = 0; gi < gridN; gi++) {
-    for (var gj = 0; gj < gridN; gj++) {
-      (function(pi, pj) {
-        var px = Math.round(size.x * (pi + 0.5) / gridN);
-        var py = Math.round(size.y * (pj + 0.5) / gridN);
-        var featureUrl = lyr.wmsUrl
-          + '&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo'
-          + '&LAYERS=' + lyr.layer
-          + '&QUERY_LAYERS=' + lyr.layer
-          + '&INFO_FORMAT=application%2Fjson'
-          + '&FEATURE_COUNT=10'
-          + '&SRS=EPSG%3A3857'
-          + '&BBOX=' + bbox
-          + '&WIDTH=' + size.x + '&HEIGHT=' + size.y
-          + '&X=' + px + '&Y=' + py;
-
-        pending++;
-        fetch(featureUrl)
-          .then(function(r) { return r.text(); })
-          .then(function(text) {
-            pending--;
-            if (!text || text.trim().startsWith('<')) return;
-            try {
-              var json = JSON.parse(text);
-              var features = json.features || [];
-              features.forEach(function(f) {
-                var g = f.geometry;
-                if (!g) return;
-                var lat, lng;
-                if (g.type === 'Point') { lng = g.coordinates[0]; lat = g.coordinates[1]; }
-                else if (g.type === 'MultiPoint') { lng = g.coordinates[0][0]; lat = g.coordinates[0][1]; }
-                else return;
-                if (!lat || !lng || lat < 33 || lat > 39) return;
-                var dup = redzones.some(function(r) {
-                  var dx=(r.lat-lat)*111000, dy=(r.lng-lng)*111000*Math.cos(lat*Math.PI/180);
-                  return Math.sqrt(dx*dx+dy*dy) < radiusMap[lyr.id] * 2;
-                });
-                if (!dup) {
-                  addRedzoneCircle(lat, lng, lyr.label + ' 위험지점', lyr.id, colorMap[lyr.id], radiusMap[lyr.id], true);
-                  added++;
-                }
-              });
-              if (pending === 0 && added > 0) {
-                showToast('✅ ' + lyr.label + ' 레드존 ' + added + '개 자동 추가!');
-              } else if (pending === 0) {
-                showToast(lyr.label + ' — 현재 화면 범위 내 위험지점 없음');
-              }
-            } catch(e) { /* JSON 파싱 실패 무시 */ }
-          })
-          .catch(function() { pending--; });
-      })(gi, gj);
-    }
+    showToast(lyr.label + ' ON — 지도에 표시됩니다. 위험지점은 레드존 추가 버튼으로 직접 지정하세요.');
   }
 }
 
