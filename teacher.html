@@ -155,7 +155,7 @@ select.iif option{background:var(--bg)}
 <div class="pg on" id="pg-home">
   <div class="hero">
     <div style="font-size:11px;color:var(--dm)" id="heroDate"></div>
-    <h2>각화중학교 현장체험학습<br>안전관리 시스템</h2>
+    <h2>ㅇㅇ중학교 현장체험학습<br>안전관리 시스템</h2>
     <div class="sub">경주 역사유적지구 · 1박 2일</div>
     <div class="stats-row">
       <div class="stat"><div class="stat-n" id="h-total">0</div><div class="stat-l">서명완료</div></div>
@@ -327,7 +327,7 @@ var SAFETY_LAYERS = [
     layer:'A2SM_CRASHACDNTSTTUS', style:'A2SM_CrashAcdntSttus', label:'\u26A0\uFE0F 추락낙상사고', color:'#ffd93d' }
 ];
 
-var SCHOOL_RULES = '[각화중학교 2026 현장체험학습 규정]\n1. 방/버스 배정: AI 공정 배정, 개인 사유 변경 불가\n2. 스마트폰: 도착 후 담임 보관\n3. 안전: GPS 추적, 구역 이탈 즉시 경보, 3단계 자동신고\n4. 불참: 7일 전 서면 신청';
+var SCHOOL_RULES = '[ㅇㅇ중학교 2026 현장체험학습 규정]\n1. 방/버스 배정: AI 공정 배정, 개인 사유 변경 불가\n2. 스마트폰: 도착 후 담임 보관\n3. 안전: GPS 추적, 구역 이탈 즉시 경보, 3단계 자동신고\n4. 불참: 7일 전 서면 신청';
 
 // ── 지도 변수
 var map = null, mapReady = false;
@@ -1031,9 +1031,9 @@ document.addEventListener('DOMContentLoaded', function(){
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
   if(loadDB().length===0){
     saveDB([
-      {id:'demo1',name:'김민준','class':'2-1',number:'3',gender:'남',signed:false,signedAt:null,lat:null,lng:null,stage:0},
-      {id:'demo2',name:'이수진','class':'2-1',number:'7',gender:'여',signed:false,signedAt:null,lat:null,lng:null,stage:0},
-      {id:'demo3',name:'박지호','class':'2-2',number:'12',gender:'남',signed:false,signedAt:null,lat:null,lng:null,stage:0}
+      {id:'demo1',name:'김말이','class':'2-1',number:'3',gender:'남',signed:false,signedAt:null,lat:null,lng:null,stage:0},
+      {id:'demo2',name:'이식스','class':'2-1',number:'7',gender:'여',signed:false,signedAt:null,lat:null,lng:null,stage:0},
+      {id:'demo3',name:'박세븐','class':'2-2',number:'12',gender:'남',signed:false,signedAt:null,lat:null,lng:null,stage:0}
     ]); refreshAllUI();
   }
 });
