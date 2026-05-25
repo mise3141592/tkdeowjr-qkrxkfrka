@@ -827,10 +827,44 @@ function addMsg(role,text){
   ca.scrollTop=9999;
 }
 function qs(t){document.getElementById('chin').value=t;sendChat();}
-function callAI(prompt,max){
-  return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-request-check':'skip'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max||800,messages:[{role:'user',content:prompt}]})})
-    .then(function(res){if(!res.ok)return res.json().then(function(e){throw new Error(e.error&&e.error.message||'HTTP '+res.status);});return res.json();})
-    .then(function(d){return (d.content||[]).map(function(c){return c.text||'';}).join('');});
+// function callAI(prompt,max){
+//   return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-request-check':'skip'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max||800,messages:[{role:'user',content:prompt}]})})
+//     .then(function(res){if(!res.ok)return res.json().then(function(e){throw new Error(e.error&&e.error.message||'HTTP '+res.status);});return res.json();})
+//     .then(function(d){return (d.content||[]).map(function(c){return c.text||'';}).join('');});
+// }
+function callAI(prompt, max) {
+  var apiKey = 'AIzaSyA7ld7d57ydK9H95CrPYAuoKqyPRwqLr10';
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
+  
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        maxOutputTokens: max || 800
+      }
+    })
+  })
+  .then(function(res) {
+    if (!res.ok) {
+      return res.json().then(function(e) {
+        throw new Error(e.error && e.error.message || 'HTTP ' + res.status);
+      });
+    }
+    return res.json();
+  })
+  .then(function(d) {
+    // Gemini API 응답 구조에서 텍스트 데이터 추출
+    if (d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts && d.candidates[0].content.parts[0]) {
+      return d.candidates[0].content.parts[0].text || '';
+    }
+    return '답변을 생성할 수 없습니다.';
+  });
 }
 function runRoute(){
   var s=document.getElementById('rS').value, e=document.getElementById('rE').value;
