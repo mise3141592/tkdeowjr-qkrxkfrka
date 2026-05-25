@@ -1,36 +1,57 @@
-const CACHE = 'fieldtrip-v1';
-const ASSETS = ['./teacher.html','./student.html','./index.html'];
+var CACHE = 'fieldtrip-v3';
+var ASSETS = ['./teacher.html', './student.html', './index.html'];
 
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(()=>{})));
+self.addEventListener('install', function(e) {
+  e.waitUntil(
+    caches.open(CACHE).then(function(c) {
+      return c.addAll(ASSETS).catch(function(){});
+    })
+  );
   self.skipWaiting();
 });
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))
-  ));
+
+self.addEventListener('activate', function(e) {
+  e.waitUntil(
+    caches.keys().then(function(keys) {
+      return Promise.all(keys.filter(function(k){ return k !== CACHE; }).map(function(k){ return caches.delete(k); }));
+    })
+  );
   self.clients.claim();
 });
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => cached))
-  );
-});
 
-// 푸시 알림 수신
-self.addEventListener('push', e => {
-  const data = e.data?.json() || { title:'알림', body:'새 알림이 있습니다.' };
-  e.waitUntil(self.registration.showNotification(data.title, {
-    body: data.body,
-    icon: '/icon.png',
-    badge: '/badge.png',
-    vibrate: [200, 100, 200],
-    tag: data.tag || 'fieldtrip',
-    requireInteraction: data.urgent || false,
-    actions: data.actions || []
-  }));
-});
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  e.waitUntil(clients.openWindow(e.action === 'teacher' ? './teacher.html' : './student.html'));
+self.addEventListener('fetch', function(e) {
+  var url = e.request.url;
+  
+  // 외부 API 요청은 캐시하지 않고 네트워크로 직접 전달
+  if (url.includes('api.vworld.kr') || 
+      url.includes('safemap.go.kr') || 
+      url.includes('openstreetmap.org') ||
+      url.includes('nominatim') ||
+      url.includes('overpass-api') ||
+      url.includes('anthropic.com') ||
+      url.includes('fonts.googleapis.com') ||
+      url.includes('jsdelivr.net') ||
+      url.includes('unpkg.com')) {
+    // 외부 API는 그냥 통과 (캐시 안 함)
+    return;
+  }
+  
+  // 로컬 파일만 캐시 전략 적용
+  e.respondWith(
+    caches.match(e.request).then(function(cached) {
+      if (cached) return cached;
+      return fetch(e.request).then(function(response) {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        var responseClone = response.clone();
+        caches.open(CACHE).then(function(cache) {
+          cache.put(e.request, responseClone);
+        });
+        return response;
+      }).catch(function() {
+        return cached || new Response('오프라인 상태입니다.', {status: 503});
+      });
+    })
+  );
 });
