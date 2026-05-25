@@ -443,6 +443,30 @@ function toggleSafetyLayer(id, color, btn) {
   }
 }
 
+
+
+
+
+function runRoute(){
+  var s=document.getElementById('rS').value, e=document.getElementById('rE').value;
+  document.getElementById('routeC').style.display='none';
+  document.getElementById('routeR').innerHTML='<div style="text-align:center;padding:20px"><div class="spin" style="margin:0 auto"></div><div style="font-size:13px;color:var(--dm);margin-top:10px">AI 분석 중...</div></div>';
+  
+  var prompt = '현장체험학습 안전경로 분석을 수행해 주세요.\n' +
+               '출발지: ' + s + ' -> 목적지: ' + e + '.\n' +
+               '교통사고 통계 데이터: 경부선 855건 위험 / 당진청주선 5건 안전.\n\n' +
+               '다음 제공하는 양식을 반드시 100% 준수하여 끊기지 않은 완성된 답변을 작성해 주세요:\n\n' +
+               '🥇 추천경로\n경유노선: []\n안전도: ⭐⭐⭐⭐⭐\n이유:\n\n' +
+               '🥈 대안경로\n경유노선: []\n안전도: ⭐⭐⭐⭐\n\n' +
+               '⚠️ 주의사항 3가지\n\n' +
+               '✅ 교사 책임보호 2가지';
+
+  callAI(prompt, 1500)
+    .then(function(r){document.getElementById('routeR').innerHTML='<div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+r+'</div><button class="btn btn-s2" style="margin-top:10px" onclick="document.getElementById(\'routeC\').style.display=\'block\';document.getElementById(\'routeR\').innerHTML=\'\'">← 다시 분석</button>';})
+    .catch(function(e){document.getElementById('routeR').innerHTML='<div style="color:var(--rd);font-size:13px;padding:10px">오류: '+e.message+'</div>';document.getElementById('routeC').style.display='block';});
+}
+
+  
 // ── 폴리곤 그리기
 function onMapClick(e) {
   if (rzMode) { addRedzoneAt(e.latlng.lat, e.latlng.lng); return; }
@@ -816,7 +840,15 @@ function sendChat(){
   var tid='t'+Date.now();
   document.getElementById('chatArea').innerHTML+='<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
   document.getElementById('chatArea').scrollTop=9999;
-  callAI('당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇.\n[규정]\n'+SCHOOL_RULES+'\n[민원]\n"'+msg+'"\n[원칙] 1.공감 2.규정근거 3.단호 4.대안\n250자 이내.',800)
+  
+  // ✨ 끊김 방지용으로 고도화된 프롬프트 작성
+  var prompt = '당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n\n' +
+               '[학교 규정]\n' + SCHOOL_RULES + '\n\n' +
+               '[학부모 민원]\n"' + msg + '"\n\n' +
+               '[답변 작성 원칙]\n1. 학부모의 마음에 공감할 것\n2. 학교 규정 및 지침을 명확한 근거로 제시할 것\n3. 규정 위반 사항에 대해서는 단호하게 거절할 것\n4. 가능한 현실적인 대안을 함께 제시할 것\n\n' +
+               '[중요 요구사항]\n- 반드시 문장 마침표(.)로 명확하게 끝나는 완결된 문장 형태로 답변을 마치세요.\n- 답변은 너무 길지 않게 줄글 형태로 3~4문장 내외로 간결하게 작성하세요.';
+
+  callAI(prompt, 1000)
     .then(function(r){document.getElementById(tid).remove();addMsg('b',r);})
     .catch(function(e){document.getElementById(tid).remove();addMsg('b','⚠️ AI 오류: '+e.message);});
 }
@@ -848,8 +880,8 @@ function callAI(prompt, max) {
         parts: [{ text: prompt }]
       }],
       generationConfig: {
-        maxOutputTokens: max || 1000, // 충분한 토큰 확보로 버퍼링 차단
-        temperature: 0.5 // 답변의 일관성 및 논리 구조 강화
+        // 최대 출력 길이를 늘려 한국어 답변이 잘리지 않도록 보장합니다.
+        maxOutputTokens: max || 1000
       }
     })
   })
@@ -868,7 +900,6 @@ function callAI(prompt, max) {
     return '답변을 생성할 수 없습니다.';
   });
 }
-
 // 2. 메시지 끊김 방지 지침이 추가된 채팅 발송 함수
 function sendChat(){
   var el=document.getElementById('chin');var msg=el.value.trim();if(!msg)return;
