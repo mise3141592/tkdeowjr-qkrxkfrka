@@ -586,7 +586,7 @@ function searchVworld() {
 }
 
 function searchNominatim(q, listEl) {
-  fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q + ' 경주 대한민국') + '&format=json&limit=8&accept-language=ko', {headers:{'User-Agent':'FieldTripApp/1.0'}})
+  fetch('https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) + '&format=json&limit=8&accept-language=ko', {headers:{'User-Agent':'FieldTripApp/1.0'}})
     .then(function(res){ return res.json(); })
     .then(function(data) {
       if (!data.length) { listEl.innerHTML = '<div style="padding:12px;font-size:13px;color:var(--dm);text-align:center">검색 결과 없음</div>'; return; }
