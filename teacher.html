@@ -474,7 +474,7 @@ function runRoute(){
     '2. (30자 이내)\n\n' +
     '[중요] 위 7개 항목(추천경로·안전도·추천이유·대안경로·안전도·대안이유·주의사항3·책임보호2)을 모두 완성한 후 응답을 끝내세요. 절대 중간에 끊지 마세요.';
 
-  callAI(prompt, 1200)
+  callAI(prompt, 2048)
     .then(function(r){document.getElementById('routeR').innerHTML='<div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+r+'</div><button class="btn btn-s2" style="margin-top:10px" onclick="document.getElementById(\'routeC\').style.display=\'block\';document.getElementById(\'routeR\').innerHTML=\'\'">← 다시 분석</button>';})
     .catch(function(e){document.getElementById('routeR').innerHTML='<div style="color:var(--rd);font-size:13px;padding:10px">오류: '+e.message+'</div>';document.getElementById('routeC').style.display='block';});
 }
@@ -913,7 +913,9 @@ function callAI(prompt, max) {
       generationConfig: { 
         maxOutputTokens: max || 2048,
         temperature: 0.2
-      }
+      },
+      // thinking 비활성화 — thinking 토큰이 출력 토큰을 잡아먹는 문제 방지
+      thinkingConfig: { thinkingBudget: 0 }
     })
   })
   .then(function(res) {
