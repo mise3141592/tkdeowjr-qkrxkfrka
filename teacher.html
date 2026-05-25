@@ -834,7 +834,7 @@ function qs(t){document.getElementById('chin').value=t;sendChat();}
 // }
 function callAI(prompt, max) {
   var apiKey = 'AIzaSyA7ld7d57ydK9H95CrPYAuoKqyPRwqLr10';
-  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash:generateContent?key=' + apiKey;
   
   return fetch(url, {
     method: 'POST',
