@@ -863,7 +863,7 @@ function callAI(prompt, max) {
   }
 
   // 안정적인 모델 사용 (끊김 방지)
-  var modelName = 'gemini-1.5-flash';
+  var modelName = 'gemini-2.0-flash';
   var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey;
   
   return fetch(url, {
