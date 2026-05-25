@@ -453,26 +453,26 @@ function runRoute(){
   document.getElementById('routeR').innerHTML='<div style="text-align:center;padding:20px"><div class="spin" style="margin:0 auto"></div><div style="font-size:13px;color:var(--dm);margin-top:10px">AI 분석 중...</div></div>';
   
   var prompt =
-    '현장체험학습 안전경로 분석 전문가로서 아래 조건에 맞게 분석해 주세요.\n' +
+    '당신은 현장체험학습 안전경로 분석 전문가입니다.\n' +
     '출발지: ' + s + ' / 목적지: ' + e + '\n' +
     '교통사고 통계: 경부선 855건(위험), 당진청주선 5건(안전)\n\n' +
-    '[출력 형식 — 반드시 아래 7개 항목을 순서대로 모두 작성하고 각 항목을 완결하세요]\n\n' +
+    '아래 형식을 그대로 사용하여 각 항목을 반드시 채워 완성하세요.\n' +
+    '항목을 건너뛰거나 중간에 멈추지 말고, 마지막 줄까지 작성한 후 응답을 종료하세요.\n\n' +
     '🥇 추천경로\n' +
-    '경유노선: (출발지부터 목적지까지 IC/JC 포함 전체 경로)\n' +
+    '경유노선: [출발지→경유지→목적지 전체 경로를 한 줄로]\n' +
     '안전도: ⭐⭐⭐⭐⭐\n' +
-    '추천이유: (2문장, 왜 이 경로가 더 안전한지 근거 포함)\n\n' +
+    '이유: [이 경로를 추천하는 이유 1~2문장]\n\n' +
     '🥈 대안경로\n' +
-    '경유노선: (출발지부터 목적지까지 IC/JC 포함 전체 경로)\n' +
+    '경유노선: [출발지→경유지→목적지 전체 경로를 한 줄로]\n' +
     '안전도: ⭐⭐⭐⭐\n' +
-    '대안이유: (1문장)\n\n' +
+    '이유: [이 경로를 대안으로 제시하는 이유 1문장]\n\n' +
     '⚠️ 주의사항\n' +
-    '1. (30자 이내)\n' +
-    '2. (30자 이내)\n' +
-    '3. (30자 이내)\n\n' +
+    '1. [주의사항 첫 번째]\n' +
+    '2. [주의사항 두 번째]\n' +
+    '3. [주의사항 세 번째]\n\n' +
     '✅ 교사 책임보호\n' +
-    '1. (30자 이내)\n' +
-    '2. (30자 이내)\n\n' +
-    '[중요] 위 7개 항목(추천경로·안전도·추천이유·대안경로·안전도·대안이유·주의사항3·책임보호2)을 모두 완성한 후 응답을 끝내세요. 절대 중간에 끊지 마세요.';
+    '1. [책임보호 첫 번째]\n' +
+    '2. [책임보호 두 번째]';
 
   callAI(prompt, 2048)
     .then(function(r){document.getElementById('routeR').innerHTML='<div style="background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap">'+r+'</div><button class="btn btn-s2" style="margin-top:10px" onclick="document.getElementById(\'routeC\').style.display=\'block\';document.getElementById(\'routeR\').innerHTML=\'\'">← 다시 분석</button>';})
@@ -913,9 +913,7 @@ function callAI(prompt, max) {
       generationConfig: { 
         maxOutputTokens: max || 2048,
         temperature: 0.2
-      },
-      // thinking 비활성화 — thinking 토큰이 출력 토큰을 잡아먹는 문제 방지
-      thinking_config: { thinking_budget: 0 }
+      }
     })
   })
   .then(function(res) {
