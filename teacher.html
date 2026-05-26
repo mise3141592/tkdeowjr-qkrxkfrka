@@ -216,7 +216,7 @@ select.iif option{background:var(--bg)}
   <div class="sec">민원 AI 상담 챗봇</div>
   <div class="chwrap">
     <div class="charea" id="chatArea">
-      <div class="cm b"><div class="mb">안녕하세요! 각화중학교 현장체험학습 AI 상담 챗봇입니다.<br><br>학부모 민원을 입력하시면 교육청 지침과 학교 규정 기반으로 표준 답변을 드립니다.</div><div class="mtime">시스템</div></div>
+      <div class="cm b"><div class="mb">안녕하세요! ㅇㅇ중학교 현장체험학습 AI 상담 챗봇입니다.<br><br>학부모 민원을 입력하시면 교육청 지침과 학교 규정 기반으로 표준 답변을 드립니다.</div><div class="mtime">시스템</div></div>
     </div>
     <div class="qbtns">
       <button class="qb" onclick="qs('방 배정 변경해주세요')">방 배정 변경</button>
@@ -278,7 +278,7 @@ select.iif option{background:var(--bg)}
     <div class="mhandle"></div><button class="mclose" onclick="closeM('routeM')">✕</button>
     <div class="mtitle">🛣️ AI 안전경로 분석</div>
     <div id="routeC">
-      <div style="margin-bottom:12px"><div class="ilab">출발지</div><input class="iif" id="rS" value="광주 각화중학교"></div>
+      <div style="margin-bottom:12px"><div class="ilab">출발지</div><input class="iif" id="rS" value="광주 ㅇㅇ중학교"></div>
       <div style="margin-bottom:12px"><div class="ilab">목적지</div><input class="iif" id="rE" value="경주 불국사"></div>
       <div style="margin-bottom:12px"><div class="ilab">출발일시</div><input class="iif" type="datetime-local" id="rDT"></div>
       <button class="btn btn-ac" onclick="runRoute()">AI 분석 시작</button>
@@ -969,7 +969,7 @@ function sendChat(){
   document.getElementById('chatArea').innerHTML += '<div class="cm b" id="'+tid+'"><div class="mb"><div class="tdots"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>';
   document.getElementById('chatArea').scrollTop = 9999;
 
-  var optimizedPrompt = '당신은 각화중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n\n' +
+  var optimizedPrompt = '당신은 ㅇㅇ중학교 현장체험학습 AI 민원 상담 챗봇입니다.\n\n' +
                         '[학교 규정]\n' + SCHOOL_RULES + '\n\n' +
                         '[학부모 민원]\n"' + msg + '"\n\n' +
                         '[답변 작성 구조]\n' +
